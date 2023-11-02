@@ -1,4 +1,4 @@
--- (c) 2023 Propagram. Mit LIcensed. 
+-- (c) 2023 Propagram. MIT Licensed. 
 
 local luarocks_config = ide.config.luarocks or {}
 local luarocks_version
