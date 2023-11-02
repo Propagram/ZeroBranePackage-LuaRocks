@@ -1,35 +1,4 @@
---[[
-https://github.com/luarocks/luarocks/blob/b8a2710a2cefbddc5e6b494db186014b341412e4/src/luarocks/deps.lua#L668
-LUA_VERSION_NUM	501
-
-é necessário ter os includes de lua para cada versão
-útil para quando for realmente instalar binarios
-mas infelizmente para modulos puro lua não é necessário
-
-
-primeiramente checamos se realmente não há uma configuração de include definido via luarocks config
-e se o user não definiu tambem
-havendo, deixamos como está
-
-caso não haja,
-
-podemos "hackear" isso:
-
-criando um arquivo "lua.h" no diretorio do interpretador?
-que contenha a versão no seguinte formato:
-LUA_VERSION_NUM	501
-
-e definimos o path via LUA_INCDIR
-
-podemos fazer essa alteração se e somente se não estiver definido essa variável nos configs
-
-e caso o usuário baixe algum modulo binário?
-
-nesse caso, presuvilmente haverá um erro de compilação
-
-após esse hack devemos unset essa configuração
-]]
-
+-- (c) 2023 Propagram. Mit LIcensed. 
 
 local luarocks_config = ide.config.luarocks or {}
 local luarocks_version
