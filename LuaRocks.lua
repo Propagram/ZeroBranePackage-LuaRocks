@@ -705,7 +705,7 @@ return {
   name = "LuaRocks ZeroBrane Package",
   description = "Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!",
   author = "Evandro C.",
-  version = 0.1,
+  version = 0.5,
 
   onRegister = function(self)
     local pid 
