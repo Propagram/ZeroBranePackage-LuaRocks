@@ -52,26 +52,26 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
   else
     local args = cmd
     cmd = luarocks_path ..
-          " --lua-dir=\"" .. (old_lua_dir or lua_dir) .. "\"" ..
-          " --lua-version=\"" .. (old_lua_version or lua_version) .. "\""
+          " --lua-dir=\"" .. (old_lua_dir or lua_dir):gsub("\\$", "")  .. "\"" ..
+          " --lua-version=\"" .. (old_lua_version or lua_version):gsub("\\$", "")  .. "\""
     if luarocks_config.server then
       cmd = luarocks_path ..
           " --server=\"" .. luarocks_config.server .. "\""
     end
     for key, value in pairs(luarocks_variables) do
       if type(key) == "string" then
-        cmd = cmd .. " " .. key:gsub("\"", "") .. "=\"" .. value:gsub("\"", "") .. "\""
+        cmd = cmd .. " " .. key:gsub("\"", "") .. "=\"" .. value:gsub("\"", ""):gsub("\\$", "") .. "\""
       end
     end
     if spec == 0 then -- Projects Modules
       cmd = cmd ..
-            " --tree=\"" .. project_path:gsub("\"", "") .. (luarocks_config.directory or "luarocks_modules") .. "\""
+            " --tree=\"" .. (project_path:gsub("\"", "") .. (luarocks_config.directory or "luarocks_modules")):gsub("\\$", "")  .. "\""
       spec = project_path
     elseif spec == 1 then  -- System/User Modules
       
     elseif spec == 2 then  -- IDE Packages
       cmd = cmd ..
-            " --tree=\"" .. packages_path:gsub("\"", "") .. "\""
+            " --tree=\"" .. packages_path:gsub("\"", ""):gsub("\\$", "")  .. "\""
       spec = packages_path
     end
     cmd = cmd .." " .. args
@@ -229,6 +229,9 @@ local function create_tab(parent, page, tab)
       luarocks(cmd, function(out)
         local items = {}
         string.gsub(out, "([^\n\r\f%s\t]+)[%s\t]+[0-9%.%-]+[%s\t]+rockspec", function(item)
+          if page == 2 then
+            item = string.sub(item, #(luarocks_config.package_prefix or "zerobranepackage-") + 1)
+          end
           if not items[item] then
             items[#items + 1] = item
           end
