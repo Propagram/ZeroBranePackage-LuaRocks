@@ -161,7 +161,7 @@ local function create_html(html)
   return [[
 <html>
     <head>
-    <title>wxLua Bound Widget demonstration</title>
+    <title>LuaRocks ZeroBrane Package</title>
     </head>
     <body>
 ]] .. html .. [[
