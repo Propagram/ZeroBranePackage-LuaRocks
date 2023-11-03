@@ -9,7 +9,7 @@ Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directl
 
 1. Create a public repository. The repository name must start with `ZeroBranePackage-` followed by the name of your package. For example, if your package file is named `example.lua`, the repository name should be `ZeroBranePackage-example`. It's important to check beforehand if `ZeroBranePackage-example` already exists, for instance, if it's been previously released on LuaRocks.org (perform a search before proceeding to ensure uniqueness).
 
-2. Upload your Lua package file to the repository **without** the `ZeroBranePackage-` prefix. Using our example, the file should be named `example.lua`.
+2. Upload your `.lua` package file to the repository **without** the `ZeroBranePackage-` prefix. Using our example, the file should be named `example.lua`.
 
 3. Now, create a `.rockspec` file (the LuaRocks accepted standard). You can use a text editor such as Notepad. The Rockspec format should be as follows. Remember to replace the values to fit your package! (In the example below, we'll use our sample: `ZeroBranePackage-example`)
 
