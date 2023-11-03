@@ -2,7 +2,7 @@ package = "ZeroBranePackage-LuaRocks"
 version = "0.1.0-0"
 
 source = {
- url = "git+ssh://git@github.com/Propagram/ZeroBranePackage-LuaRocks.git",
+ url = "git://github.com/Propagram/ZeroBranePackage-LuaRocks.git",
  branch = "main"
 }
 
