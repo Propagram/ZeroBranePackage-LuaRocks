@@ -1,4 +1,4 @@
-# ZeroBranePackage-LuaRocks
+# LuaRocks ZeroBrane Package
 Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!
 
 ## TODO
