@@ -7,6 +7,7 @@ local luarocks_panel = "luarocksPanel"
 local luarocks_variables = luarocks_config.variables or {}
 local debug = luarocks_config.debug
 local lua_dir, lua_version, lua_incdir
+local luarocks_dir
 
 local zerobrane_path, dir_separator = string.match(ide.editorFilename,"^(.+)([/\\])")
 zerobrane_path = zerobrane_path .. dir_separator
@@ -55,7 +56,7 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
           " --lua-dir=\"" .. (old_lua_dir or lua_dir):gsub("\\$", "")  .. "\"" ..
           " --lua-version=\"" .. (old_lua_version or lua_version):gsub("\\$", "")  .. "\""
     if lua_incdir then
-      cmd = luarocks_path ..
+      cmd = cmd ..
           " LUA_INCDIR=\"" .. lua_incdir:gsub("\\$", "") .. "\""
     end
     if luarocks_config.server then
@@ -643,7 +644,7 @@ local function success()
     end)
 
     control:AddPage(create_page(control, 0), "Project Modules", true, 0)
-    control:AddPage(create_page(control, 1), "Global Modules", false, 1)
+    control:AddPage(create_page(control, 1), "User Modules", false, 1)
     control:AddPage(create_page(control, 2), "IDE Packages", false, 2)
     -- control:AddPage(CreateBookPage(control, 3), "Tools", false, 2)
     control:AddPage(create_about(control), "About", false, 3)
@@ -709,17 +710,19 @@ return {
 
   onRegister = function(self)
     local pid 
-    local home_dir = wx.wxStandardPaths:Get():GetUserDir(0):match("^(.+)[/\\]") .. dir_separator
-    if not wx.wxDirExists(home_dir .. ".luarocks") then
-      wx.wxMkdir(home_dir .. ".luarocks")
+    local user_dir = ide.configs.user:match("^(.+)[/\\]"):match("^(.+)[/\\]") .. dir_separator--wx.wxStandardPaths:Get():GetUserDir(0):match("^(.+)[/\\]") .. dir_separator
+    if not wx.wxDirExists(user_dir .. ".luarocks") then
+      wx.wxMkdir(user_dir .. ".luarocks")
     end
-    if not wx.wxDirExists(home_dir .. ".zbstudio") then
-      wx.wxMkdir(home_dir .. ".zbstudio")
-      if not wx.wxDirExists(home_dir .. ".zbstudio" .. dir_separator .. "packages") then
-        wx.wxMkdir(home_dir .. ".zbstudio" .. dir_separator .. "packages")
-      end
+    print("user_dir: ", user_dir)
+    luarocks_dir = user_dir .. ".luarocks" .. dir_separator
+    if not wx.wxDirExists(user_dir .. ".zbstudio") then
+      wx.wxMkdir(user_dir .. ".zbstudio")
     end
-    packages_path = home_dir .. ".zbstudio" .. dir_separator .. "packages" .. dir_separator
+    if not wx.wxDirExists(user_dir .. ".zbstudio" .. dir_separator .. "packages") then
+      wx.wxMkdir(user_dir .. ".zbstudio" .. dir_separator .. "packages")
+    end
+    packages_path = user_dir .. ".zbstudio" .. dir_separator .. "packages" .. dir_separator
     pid = luarocks("--version", function(out)
       luarocks_version = string.match(out, "luarocks ([%d%.]+)")
       if luarocks_version then
