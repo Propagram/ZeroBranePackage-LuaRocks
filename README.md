@@ -4,7 +4,6 @@ Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directl
 ## TODO
 
 * Set Lua Interpreter to 5.1 on Install/Load IDE packages
-* Test on Linux/Ubuntu
 
 ## How to Deploy a ZeroBrane Package via LuaRocks
 
