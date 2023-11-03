@@ -477,8 +477,8 @@ local function create_tab(parent, page, tab)
     elseif tab ==2 then --> Download
 
       if tool == 0 then --> Install
+        parent:SetSelection(0)
         if page == 0 then --> Project modules
-          parent:SetSelection(0)
           luarocks("install " .. item, function(result)
             print(result)
             onTabLoad[page]()            
@@ -487,7 +487,7 @@ local function create_tab(parent, page, tab)
           luarocks("install " .. item, function(result)
             print(result)
             onTabLoad[page]()
-          end, 2)
+          end, 1)
         elseif page == 2 then --> IDE packages
           luarocks_ide("install " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
             print(result)
