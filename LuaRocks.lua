@@ -6,7 +6,7 @@ local luarocks_path = luarocks_config.path or (ide.osname == "Windows" and "luar
 local luarocks_panel = "luarocksPanel"
 local luarocks_variables = luarocks_config.variables or {}
 local debug = luarocks_config.debug
-local lua_dir, lua_version
+local lua_dir, lua_version, lua_incdir
 
 local zerobrane_path, dir_separator = string.match(ide.editorFilename,"^(.+)([/\\])")
 zerobrane_path = zerobrane_path .. dir_separator
@@ -54,6 +54,10 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
     cmd = luarocks_path ..
           " --lua-dir=\"" .. (old_lua_dir or lua_dir):gsub("\\$", "")  .. "\"" ..
           " --lua-version=\"" .. (old_lua_version or lua_version):gsub("\\$", "")  .. "\""
+    if lua_incdir then
+      cmd = luarocks_path ..
+          " LUA_INCDIR=\"" .. lua_incdir:gsub("\\$", "") .. "\""
+    end
     if luarocks_config.server then
       cmd = luarocks_path ..
           " --server=\"" .. luarocks_config.server .. "\""
@@ -68,7 +72,8 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
             " --tree=\"" .. (project_path:gsub("\"", "") .. (luarocks_config.directory or "luarocks_modules")):gsub("\\$", "")  .. "\""
       spec = project_path
     elseif spec == 1 then  -- System/User Modules
-      
+      cmd = cmd ..
+            " --local"
     elseif spec == 2 then  -- IDE Packages
       cmd = cmd ..
             " --tree=\"" .. packages_path:gsub("\"", ""):gsub("\\$", "")  .. "\""
@@ -76,6 +81,7 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
     end
     cmd = cmd .." " .. args
   end
+  -- sudo git config --global url."https://github.com/".insteadOf git://github.com/
   local shell_cmd = 'bash -c "%s"' -- do not use %q
   if ide.osname == "Windows" then
     shell_cmd = 'cmd /c "%s"' -- do not use %q
@@ -102,9 +108,10 @@ local function luarocks_ide(cmd, callback)
   local lua_modules_path = "/share/lua/" .. old_lua_version
   local lib_modules_path = "/lib/lua/" .. old_lua_version
   local rocks_subdir = "/lib/luarocks/rocks-" .. old_lua_version
-  luarocks("config lua_modules_path \"\"", function()
-    luarocks("config lib_modules_path \"\"", function()
-      luarocks("config rocks_subdir \"\"", function()
+  local empty = ide.osname == "Windows" and '""' or "''"
+  luarocks("config lua_modules_path " .. empty, function()
+    luarocks("config lib_modules_path " .. empty, function()
+      luarocks("config rocks_subdir " .. empty, function()
         luarocks(cmd, function(result)
           luarocks("config lua_modules_path \"" .. lua_modules_path .. "\"", function()
             luarocks("config lib_modules_path \"" .. lib_modules_path .. "\"", function()
@@ -173,8 +180,10 @@ local function create_tab(parent, page, tab)
 
   local list = wx.wxListBox(panel, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize)
   
-  list:SetBackgroundColour(bg)
-  list:SetForegroundColour(fg)
+  if ide.osname == "Windows" then
+    list:SetBackgroundColour(bg) -- fix selected item colour on Linux
+    list:SetForegroundColour(fg)
+  end
 
   local box =  wx.wxStaticBoxSizer(wx.wxVERTICAL, panel, page == 2 and "Selected package:" or "Selected module:")
   box:GetStaticBox():Enable(false)
@@ -196,8 +205,10 @@ local function create_tab(parent, page, tab)
 
     local search = wx.wxTextCtrl(search_panel, wx.wxID_ANY, "", wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxTE_PROCESS_ENTER)
     
-    search:SetBackgroundColour(bg)
-    search:SetForegroundColour(fg)
+    if ide.osname == "Windows" then
+      search:SetBackgroundColour(bg) -- fix selected item colour on Linux
+      search:SetForegroundColour(fg)
+    end
     
     local search_button = wx.wxBitmapButton(search_panel, wx.wxID_ANY, image, wx.wxDefaultPosition, wx.wxDefaultSize)
     
@@ -387,7 +398,7 @@ local function create_tab(parent, page, tab)
     toolbar:AddSeparator() --> 3
     toolbar:AddTool(wx.wxID_ANY, "&Remove", image_list:GetBitmap(5), page == 2 and "Remove package" or "Remove module") --> 4
   elseif tab ==2 then --> Download
-    toolbar:AddTool(wx.wxID_ANY, "&Install", image_list:GetBitmap(2), page == 2 and "Install package" or "Intall module") --> 0
+    toolbar:AddTool(wx.wxID_ANY, "&Install", image_list:GetBitmap(2), page == 2 and "Install package" or "Install module") --> 0
     toolbar:AddSeparator() --> 1
     toolbar:AddTool(wx.wxID_ANY, "&Query", image_list:GetBitmap(3), page == 2 and "Query package" or "Query module") --> 2
   end
@@ -523,7 +534,7 @@ local function create_tab(parent, page, tab)
     
     local item = object:GetString(selection)
 
-    ide:Print("item:", item)
+    print("item:", item)
     box:GetStaticBox():Enable(true)
     
     if tab == 1 then -- Installed
@@ -534,7 +545,7 @@ local function create_tab(parent, page, tab)
       elseif page == 1 then --> System modules
         luarocks("show " .. item, function(result)
           details:SetPage(create_html(result))
-        end, 2)
+        end, 1)
       elseif page == 2 then --> IDE packages
         luarocks_ide("show " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
           details:SetPage(create_html(result))
@@ -633,7 +644,7 @@ local function success()
 
     control:AddPage(create_page(control, 0), "Project Modules", true, 0)
     control:AddPage(create_page(control, 1), "Global Modules", false, 1)
-    control:AddPage(create_page(control, 2), "IDE\nPackages", false, 2)
+    control:AddPage(create_page(control, 2), "IDE Packages", false, 2)
     -- control:AddPage(CreateBookPage(control, 3), "Tools", false, 2)
     control:AddPage(create_about(control), "About", false, 3)
 
@@ -698,6 +709,17 @@ return {
 
   onRegister = function(self)
     local pid 
+    local home_dir = wx.wxStandardPaths:Get():GetUserDir(0):match("^(.+)[/\\]") .. dir_separator
+    if not wx.wxDirExists(home_dir .. ".luarocks") then
+      wx.wxMkdir(home_dir .. ".luarocks")
+    end
+    if not wx.wxDirExists(home_dir .. ".zbstudio") then
+      wx.wxMkdir(home_dir .. ".zbstudio")
+      if not wx.wxDirExists(home_dir .. ".zbstudio" .. dir_separator .. "packages") then
+        wx.wxMkdir(home_dir .. ".zbstudio" .. dir_separator .. "packages")
+      end
+    end
+    packages_path = home_dir .. ".zbstudio" .. dir_separator .. "packages" .. dir_separator
     pid = luarocks("--version", function(out)
       luarocks_version = string.match(out, "luarocks ([%d%.]+)")
       if luarocks_version then
@@ -749,7 +771,11 @@ return {
               print("variables.LUA_INCDIR: ", lua_dir)
             end, nil, true)
           end
+          lua_incdir = lua_dir
+        else
+          lua_incdir = result
         end
+        print("lua incdir: ", lua_incdir)
       end, nil , true)
     end
   end,
