@@ -206,6 +206,7 @@ local function create_tab(parent, page, tab)
       if empty == true then
         value = ""
       end
+      value = string.lower(value)
       value = value:match("^[%s\t]*(.-)[%s\t]*$")
       value = value:gsub("[^a-zA-Z_%-0-9]", "")
       if page ~= 2 and value == "" then
@@ -219,7 +220,7 @@ local function create_tab(parent, page, tab)
       elseif page == 1 then -- System Modules
         cmd = "search " .. value .. " --porcelain"
       elseif page == 2 then -- IDE Packages
-        cmd = "search " .. (luarocks_config.package_prefix or "ZeroBranePackage-") .. value .. " --porcelain"
+        cmd = "search " .. (luarocks_config.package_prefix or "zerobranepackage-") .. value .. " --porcelain"
       else
         print("page not found:", page)
         return
@@ -320,7 +321,7 @@ local function create_tab(parent, page, tab)
         luarocks_ide("list --porcelain", function(result)
           local items = {}
           string.gsub(result, "([^\n\r\f%s\t]+)[%s\t]+[0-9%.%-]+[%s\t]+installed", function(item)
-            local start, final = string.find(item, (luarocks_config.package_prefix or "ZeroBranePackage-"), 0, true)
+            local start, final = string.find(item, (luarocks_config.package_prefix or "zerobranepackage-"), 0, true)
             if start == 1 then
               item = string.sub(item, final + 1)
               if not items[item] then
@@ -413,7 +414,7 @@ local function create_tab(parent, page, tab)
             onTabLoad[page]()
           end, 2)
         elseif page == 2 then --> IDE packages
-          luarocks_ide("install " .. (luarocks_config.package_prefix or "ZeroBranePackage-") .. item, function(result)
+          luarocks_ide("install " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
             print(result)
             onTabLoad[page]()
           end)
@@ -438,7 +439,7 @@ local function create_tab(parent, page, tab)
             end
           end, 2)
         elseif page == 2 then --> IDE packages
-          luarocks_ide("show " .. (luarocks_config.package_prefix or "ZeroBranePackage-") .. item .. " --porcelain", function(result)
+          luarocks_ide("show " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item .. " --porcelain", function(result)
             local homepage = string.match(result, "\nhomepage[%s\t]+([^\n%s]+)")
             if homepage then
               wx.wxLaunchDefaultBrowser(homepage, 0)
@@ -462,7 +463,7 @@ local function create_tab(parent, page, tab)
               onTabLoad[page]()
             end, 2)
           elseif page == 2 then --> IDE packages
-            luarocks_ide("remove " .. (luarocks_config.package_prefix or "ZeroBranePackage-") .. item, function(result)
+            luarocks_ide("remove " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
               print(result)
               onTabLoad[page]()
             end)
@@ -485,7 +486,7 @@ local function create_tab(parent, page, tab)
             onTabLoad[page]()
           end, 2)
         elseif page == 2 then --> IDE packages
-          luarocks_ide("install " .. (luarocks_config.package_prefix or "ZeroBranePackage-") .. item, function(result)
+          luarocks_ide("install " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
             print(result)
             onTabLoad[page]()            
           end)
@@ -525,7 +526,7 @@ local function create_tab(parent, page, tab)
           details:SetPage(create_html(result))
         end, 2)
       elseif page == 2 then --> IDE packages
-        luarocks_ide("show " .. (luarocks_config.package_prefix or "ZeroBranePackage-") .. item, function(result)
+        luarocks_ide("show " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
           details:SetPage(create_html(result))
         end)
       end
