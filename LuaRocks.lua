@@ -164,6 +164,7 @@ end
 
 local onTabLoad = {}
 local LoadPackages
+local PagesResultsLabel = {}
 
 local function create_tab(parent, page, tab)
 
@@ -359,6 +360,10 @@ local function create_tab(parent, page, tab)
   results_label = wx.wxStaticText(panel, wx.wxID_ANY, tab == 2 and "Results:" or (page == 2 and "Packages:" or "Modules:"))
   sizer:Add(results_label, 0,  wx.wxEXPAND+wx.wxALL, 4)
 
+  if tab == 1 then --> Installed
+    PagesResultsLabel[page] = results_label
+  end
+
   sizer:Add(list, 10,  wx.wxEXPAND+wx.wxALL, 0)
   sizer:Add(box, 1,  wx.wxEXPAND + wx.wxLEFT + wx.wxRIGHT + wx.wxBOTTOM, 0)
   panel:SetSizer(sizer)
@@ -406,6 +411,7 @@ local function create_tab(parent, page, tab)
     if tab == 1 then --> Installed
       
       if tool == 0 then --> Update
+        PagesResultsLabel[page]:SetLabel("Checking for updates...")
         if page == 0 then --> Project modules
           luarocks("install " .. item, function(result)
             print(result)
@@ -477,6 +483,7 @@ local function create_tab(parent, page, tab)
     elseif tab ==2 then --> Download
 
       if tool == 0 then --> Install
+        PagesResultsLabel[page]:SetLabel("Installing...")
         parent:SetSelection(0)
         if page == 0 then --> Project modules
           luarocks("install " .. item, function(result)
