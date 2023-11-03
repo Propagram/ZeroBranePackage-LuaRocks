@@ -163,6 +163,7 @@ local function create_html(html)
 end
 
 local onTabLoad = {}
+local LoadPackages
 
 local function create_tab(parent, page, tab)
 
@@ -174,7 +175,7 @@ local function create_tab(parent, page, tab)
   list:SetBackgroundColour(bg)
   list:SetForegroundColour(fg)
 
-  local box =  wx.wxStaticBoxSizer(wx.wxVERTICAL, panel, page == 2 and "Package:" or "Module:")
+  local box =  wx.wxStaticBoxSizer(wx.wxVERTICAL, panel, page == 2 and "Selected package:" or "Selected module:")
   box:GetStaticBox():Enable(false)
 
   local image = wx.wxArtProvider.GetBitmap(wx.wxART_FIND, wx.wxART_BUTTON, wx.wxSize(16, 16))
@@ -189,7 +190,7 @@ local function create_tab(parent, page, tab)
     
     search_panel:SetSizer(search_sizer)
     
-    local search_label = wx.wxStaticText(panel, wx.wxID_ANY, page == 2 and "Search packages:" or "Search modules:")
+    local search_label = wx.wxStaticText(panel, wx.wxID_ANY, page == 2 and "Search remote packages:" or "Search remote modules:")
     -- search_label:SetForegroundColour(fg)
 
     local search = wx.wxTextCtrl(search_panel, wx.wxID_ANY, "", wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxTE_PROCESS_ENTER)
@@ -199,15 +200,19 @@ local function create_tab(parent, page, tab)
     
     local search_button = wx.wxBitmapButton(search_panel, wx.wxID_ANY, image, wx.wxDefaultPosition, wx.wxDefaultSize)
     
-    local event = function()
+    local event = function(empty)
       local cmd
       local value = search:GetValue()
+      if empty == true then
+        value = ""
+      end
       value = value:match("^[%s\t]*(.-)[%s\t]*$")
       value = value:gsub("[^a-zA-Z_%-0-9]", "")
-      if value == "" then
+      if page ~= 2 and value == "" then
         results_label:SetLabel("No results for '" .. search:GetValue() .. "'")
         return
       end
+
       results_label:SetLabel("Searching...")
       if page == 0 then -- Project Modules
         cmd = "search " .. value .. " --porcelain"
@@ -230,15 +235,29 @@ local function create_tab(parent, page, tab)
         end)
         list:Clear()
         list:InsertItems(items, list:GetCount())
-        if #items == 0 then
-          results_label:SetLabel("No results for '" .. search:GetValue() .. "'")
-        elseif #items == 1 then
-          results_label:SetLabel(#items .. " result for '" .. search:GetValue() .. "':")
+        if empty == true then
+          if #items == 0 then
+            results_label:SetLabel("No results")
+          elseif #items == 1 then
+            results_label:SetLabel(#items .. " result:")
+          else
+            results_label:SetLabel(#items .. " results:")
+          end
         else
-          results_label:SetLabel(#items .. " results for '" .. search:GetValue() .. "':")
+          if #items == 0 then
+            results_label:SetLabel("No results for '" .. search:GetValue() .. "'")
+          elseif #items == 1 then
+            results_label:SetLabel(#items .. " result for '" .. search:GetValue() .. "':")
+          else
+            results_label:SetLabel(#items .. " results for '" .. search:GetValue() .. "':")
+          end
         end
         --list:InsertItems({"teste"}, list:GetCount())
       end)
+    end
+
+    if page == 2 then
+      LoadPackages = event
     end
 
     search_button:Connect(wx.wxEVT_BUTTON, event)
@@ -323,6 +342,10 @@ local function create_tab(parent, page, tab)
       else
         print("page not found:", page)
         return
+      end
+      
+      if page == 2 then
+        LoadPackages(true)
       end
 
     end
@@ -451,19 +474,20 @@ local function create_tab(parent, page, tab)
 
       if tool == 0 then --> Install
         if page == 0 then --> Project modules
+          parent:SetSelection(0)
           luarocks("install " .. item, function(result)
             print(result)
-            onTabLoad[page]()
+            onTabLoad[page]()            
           end, 0)
         elseif page == 1 then --> System modules
           luarocks("install " .. item, function(result)
-            print(result) 
+            print(result)
             onTabLoad[page]()
           end, 2)
         elseif page == 2 then --> IDE packages
           luarocks_ide("install " .. (luarocks_config.package_prefix or "ZeroBranePackage-") .. item, function(result)
             print(result)
-            onTabLoad[page]()
+            onTabLoad[page]()            
           end)
         end
       elseif tool == 2 then --> Query
@@ -700,6 +724,8 @@ return {
       end
       lua_version = string.match(tostring(lua_version), "^(%d%.%d)")
     end
+    print("lua interpreter: ", lua_dir)
+    print("lua version: ", lua_version)
     if not luarocks_variables.LUA_INCDIR then
       luarocks("config variables.LUA_INCDIR", function(result)
         if result == "" or result:lower():match("error") or result == lua_dir:gsub("\"", "") then
@@ -715,8 +741,6 @@ return {
         end
       end, nil , true)
     end
-    print("lua interpreter: ", lua_dir)
-    print("lua version: ", lua_version)
   end,
   
   onProjectLoad = function(self, project)
