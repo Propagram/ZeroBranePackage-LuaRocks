@@ -181,7 +181,7 @@ local function create_tab(parent, page, tab)
 
   local list = wx.wxListBox(panel, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize)
   
-  if ide.osname == "Windows" then
+  if ide.osname == "Windows" and fg and bg then
     list:SetBackgroundColour(bg) -- fix selected item colour on Linux
     list:SetForegroundColour(fg)
   end
@@ -206,7 +206,7 @@ local function create_tab(parent, page, tab)
 
     local search = wx.wxTextCtrl(search_panel, wx.wxID_ANY, "", wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxTE_PROCESS_ENTER)
     
-    if ide.osname == "Windows" then
+    if ide.osname == "Windows" and fg and bg then
       search:SetBackgroundColour(bg) -- fix selected item colour on Linux
       search:SetForegroundColour(fg)
     end
@@ -625,9 +625,11 @@ local function success()
     local control = wx.wxListbook(ide:GetProjectNotebook(), wx.wxID_ANY, wx.wxDefaultPosition, wx.wxSize(200,200))
 
     control:SetImageList(page_image_list)
-    
-    control:GetListView():SetBackgroundColour(bg)
-    control:GetListView():SetForegroundColour(fg)
+
+    if ide.osname == "Windows" and fg and bg then
+      control:GetListView():SetBackgroundColour(bg)
+      control:GetListView():SetForegroundColour(fg)
+    end
     
     control:Connect(wx.wxEVT_LISTBOOK_PAGE_CHANGED, function(object) 
 
