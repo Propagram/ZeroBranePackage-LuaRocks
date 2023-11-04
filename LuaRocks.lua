@@ -766,17 +766,19 @@ return {
     print("lua version: ", lua_version)
     if not luarocks_variables.LUA_INCDIR then
       luarocks("config variables.LUA_INCDIR", function(result)
-        if result == "" or result:lower():match("error") or result == lua_dir:gsub("\"", "") then
+        if result == "" or result:lower():match("error") or result == packages_path:gsub("\"", "") then
+          -- Lua 5.X header files not found
+          -- This package will create a false 'lua.h' so that Luarocks does not report an error during the installation of pure Lua libraries.
           local major, minor = lua_version:match("^(%d)%.(%d)")
-          local lua_h = io.open(lua_dir .. dir_separator .. "lua.h", "w")
+          local lua_h = io.open(packages_path .. "lua.h", "w")
           lua_h:write(string.format("LUA_VERSION_NUM	%s0%s", major, minor))
           lua_h:close()
-          if result ~= lua_dir:gsub("\"", "") then
-            luarocks("config variables.LUA_INCDIR \"" .. lua_dir:gsub("\"", "") .. "\"", function()
-              print("variables.LUA_INCDIR: ", lua_dir)
+          if result ~= packages_path:gsub("\"", "") then
+            luarocks("config variables.LUA_INCDIR \"" .. packages_path:gsub("\"", "") .. "\"", function()
+              print("variables.LUA_INCDIR: ", packages_path)
             end, nil, true)
           end
-          lua_incdir = lua_dir
+          lua_incdir = packages_path
         else
           lua_incdir = result
         end
