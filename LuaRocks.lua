@@ -102,10 +102,54 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
   end)
 end
 
+local onInterpreterLoad = function(self, interpreter)
+  if interpreter.fexepath then
+    lua_dir = string.match(interpreter.fexepath(), "^(.+)([/\\])")
+  end
+  if interpreter.luaversion then
+    lua_version = interpreter.luaversion
+    if type(lua_version) == "number" then
+      lua_version = lua_version + 0.01 -- fix 5.2999999999999998
+    end
+    lua_version = string.match(tostring(lua_version), "^(%d%.%d)")
+  end
+  print("lua interpreter: ", lua_dir)
+  print("lua version: ", lua_version)
+  if not luarocks_variables.LUA_INCDIR then
+    luarocks("config variables.LUA_INCDIR", function(result)
+      if result == "" or result:lower():match("error") or result == packages_path:gsub("\"", "") then
+        -- Lua 5.X header files not found
+        -- This package will create a false 'lua.h' so that Luarocks does not report an error during the installation of pure Lua libraries.
+        local major, minor = lua_version:match("^(%d)%.(%d)")
+        local lua_h = io.open(packages_path .. "lua.h", "w")
+        lua_h:write(string.format("LUA_VERSION_NUM	%s0%s", major, minor))
+        lua_h:close()
+        if result ~= packages_path:gsub("\"", "") then
+          luarocks("config variables.LUA_INCDIR \"" .. packages_path:gsub("\"", "") .. "\"", function()
+            print("variables.LUA_INCDIR: ", packages_path)
+          end, nil, true)
+        end
+        lua_incdir = packages_path
+      else
+        lua_incdir = result
+      end
+      print("lua incdir: ", lua_incdir)
+    end, nil , true)
+  end
+end
+
 -- IDE Packages luarocks command hack
 local function luarocks_ide(cmd, callback)
+  local lua_version = lua_version -- scope this var
   local old_lua_dir = lua_dir
   local old_lua_version = lua_version
+  if lua_version ~= "5.1" then
+    -- Temporarily change the interpreter version to 5.1
+    onInterpreterLoad(nil, {
+      luaversion = "5.1"
+    })
+    old_lua_version = "5.1"
+  end
   local lua_modules_path = "/share/lua/" .. old_lua_version
   local lib_modules_path = "/lib/lua/" .. old_lua_version
   local rocks_subdir = "/lib/luarocks/rocks-" .. old_lua_version
@@ -117,6 +161,12 @@ local function luarocks_ide(cmd, callback)
           luarocks("config lua_modules_path \"" .. lua_modules_path .. "\"", function()
             luarocks("config lib_modules_path \"" .. lib_modules_path .. "\"", function()
               luarocks("config lib_modules_path \"" .. rocks_subdir .. "\"", function()
+                if lua_version ~= "5.1" then
+                  -- Revert to the current interpreter version.
+                  onInterpreterLoad(nil, {
+                    luaversion = lua_version
+                  })
+                end
                 return callback and callback(result)
               end, 2, nil, nil, old_lua_dir, old_lua_version)
             end, 2, nil, nil, old_lua_dir, old_lua_version)
@@ -239,7 +289,25 @@ local function create_tab(parent, page, tab)
         return
       end
       
+      local lua_version = lua_version -- scope this var
+      local old_lua_version = lua_version
+      if page == 2 and lua_version ~= "5.1" then -- IDE Packages
+        -- Temporarily change the interpreter version to 5.1
+        onInterpreterLoad(nil, {
+          luaversion = "5.1"
+        })
+        old_lua_version = "5.1"
+      end
+
       luarocks(cmd, function(out)
+          
+        if page == 2 and lua_version ~= "5.1" then -- IDE Packages
+          -- Revert to the current interpreter version.
+          onInterpreterLoad(nil, {
+            luaversion = lua_version
+          })
+        end
+        
         local items = {}
         string.gsub(out, "([^\n\r\f%s\t]+)[%s\t]+[0-9%.%-]+[%s\t]+rockspec", function(item)
           if page == 2 then
@@ -270,7 +338,7 @@ local function create_tab(parent, page, tab)
           end
         end
         --list:InsertItems({"teste"}, list:GetCount())
-      end)
+      end, nil, nil, nil, nil, old_lua_version)
     end
 
     if page == 2 then
@@ -751,41 +819,7 @@ return {
     end
   end,
   
-  onInterpreterLoad =  function(self, interpreter)
-    if interpreter.fexepath then
-      lua_dir = string.match(interpreter.fexepath(), "^(.+)([/\\])")
-    end
-    if interpreter.luaversion then
-      lua_version = interpreter.luaversion
-      if type(lua_version) == "number" then
-        lua_version = lua_version + 0.01 -- fix 5.2999999999999998
-      end
-      lua_version = string.match(tostring(lua_version), "^(%d%.%d)")
-    end
-    print("lua interpreter: ", lua_dir)
-    print("lua version: ", lua_version)
-    if not luarocks_variables.LUA_INCDIR then
-      luarocks("config variables.LUA_INCDIR", function(result)
-        if result == "" or result:lower():match("error") or result == packages_path:gsub("\"", "") then
-          -- Lua 5.X header files not found
-          -- This package will create a false 'lua.h' so that Luarocks does not report an error during the installation of pure Lua libraries.
-          local major, minor = lua_version:match("^(%d)%.(%d)")
-          local lua_h = io.open(packages_path .. "lua.h", "w")
-          lua_h:write(string.format("LUA_VERSION_NUM	%s0%s", major, minor))
-          lua_h:close()
-          if result ~= packages_path:gsub("\"", "") then
-            luarocks("config variables.LUA_INCDIR \"" .. packages_path:gsub("\"", "") .. "\"", function()
-              print("variables.LUA_INCDIR: ", packages_path)
-            end, nil, true)
-          end
-          lua_incdir = packages_path
-        else
-          lua_incdir = result
-        end
-        print("lua incdir: ", lua_incdir)
-      end, nil , true)
-    end
-  end,
+  onInterpreterLoad = onInterpreterLoad,
   
   onProjectLoad = function(self, project)
     project_path = project
