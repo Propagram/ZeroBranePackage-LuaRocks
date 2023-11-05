@@ -12,6 +12,7 @@ local luarocks_dir
 local zerobrane_path, dir_separator = string.match(ide.editorFilename,"^(.+)([/\\])")
 zerobrane_path = zerobrane_path .. dir_separator
 local packages_path = zerobrane_path .. "packages" .. dir_separator
+local packages_cache = {}
 local project_path
 
 local function print(...)
@@ -117,15 +118,15 @@ local onInterpreterLoad = function(self, interpreter)
   print("lua version: ", lua_version)
   if not luarocks_variables.LUA_INCDIR then
     luarocks("config variables.LUA_INCDIR", function(result)
-      if result == "" or result:lower():match("error") or result == packages_path:gsub("\"", "") then
+      if result == "" or result:lower():match("error") or result == packages_path:gsub("\"", ""):gsub("\\$", "") then
         -- Lua 5.X header files not found
         -- This package will create a false 'lua.h' so that Luarocks does not report an error during the installation of pure Lua libraries.
         local major, minor = lua_version:match("^(%d)%.(%d)")
         local lua_h = io.open(packages_path .. "lua.h", "w")
         lua_h:write(string.format("LUA_VERSION_NUM	%s0%s", major, minor))
         lua_h:close()
-        if result ~= packages_path:gsub("\"", "") then
-          luarocks("config variables.LUA_INCDIR \"" .. packages_path:gsub("\"", "") .. "\"", function()
+        if result ~= packages_path:gsub("\"", ""):gsub("\\$", "") then
+          luarocks("config variables.LUA_INCDIR \"" .. packages_path:gsub("\"", ""):gsub("\\$", "") .. "\"", function()
             print("variables.LUA_INCDIR: ", packages_path)
           end, nil, true)
         end
@@ -160,7 +161,7 @@ local function luarocks_ide(cmd, callback)
         luarocks(cmd, function(result)
           luarocks("config lua_modules_path \"" .. lua_modules_path .. "\"", function()
             luarocks("config lib_modules_path \"" .. lib_modules_path .. "\"", function()
-              luarocks("config lib_modules_path \"" .. rocks_subdir .. "\"", function()
+              luarocks("config rocks_subdir \"" .. rocks_subdir .. "\"", function()
                 if lua_version ~= "5.1" then
                   -- Revert to the current interpreter version.
                   onInterpreterLoad(nil, {
@@ -276,18 +277,6 @@ local function create_tab(parent, page, tab)
         results_label:SetLabel("No results for '" .. search:GetValue() .. "'")
         return
       end
-
-      results_label:SetLabel("Searching...")
-      if page == 0 then -- Project Modules
-        cmd = "search " .. value .. " --porcelain"
-      elseif page == 1 then -- System Modules
-        cmd = "search " .. value .. " --porcelain"
-      elseif page == 2 then -- IDE Packages
-        cmd = "search " .. (luarocks_config.package_prefix or "zerobranepackage-") .. value .. " --porcelain"
-      else
-        print("page not found:", page)
-        return
-      end
       
       local lua_version = lua_version -- scope this var
       local old_lua_version = lua_version
@@ -299,13 +288,23 @@ local function create_tab(parent, page, tab)
         old_lua_version = "5.1"
       end
 
-      luarocks(cmd, function(out)
+      local parse_results = function(out)
           
         if page == 2 and lua_version ~= "5.1" then -- IDE Packages
           -- Revert to the current interpreter version.
           onInterpreterLoad(nil, {
             luaversion = lua_version
           })
+        end
+        
+        if out:lower():match("^warning: failed searching manifest") then
+          results_label:SetLabel("Error obtaining remote results.")
+          print(out)
+          return
+        end
+
+        if page == 2 then -- IDE packages
+          packages_cache[value] = out
         end
         
         local items = {}
@@ -338,7 +337,26 @@ local function create_tab(parent, page, tab)
           end
         end
         --list:InsertItems({"teste"}, list:GetCount())
-      end, nil, nil, nil, nil, old_lua_version)
+      end
+
+      results_label:SetLabel("Searching...")
+      if page == 0 then -- Project Modules
+        cmd = "search " .. value .. " --porcelain"
+      elseif page == 1 then -- System Modules
+        cmd = "search " .. value .. " --porcelain"
+      elseif page == 2 then -- IDE Packages
+        cmd = "search " .. (luarocks_config.package_prefix or "zerobranepackage-") .. value .. " --porcelain"
+      else
+        print("page not found:", page)
+        return
+      end
+      
+      if packages_cache[value] then
+        parse_results(packages_cache[value])
+        return
+      end
+
+      luarocks(cmd, parse_results, nil, nil, nil, nil, old_lua_version)
     end
 
     if page == 2 then
