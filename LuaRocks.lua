@@ -443,7 +443,7 @@ local function create_tab(parent, page, tab)
           else
             results_label:SetLabel(#items .. " packages found:")
           end
-        end, 1)
+        end)
       else
         print("page not found:", page)
         return
@@ -521,7 +521,7 @@ local function create_tab(parent, page, tab)
           luarocks("install " .. item, function(result)
             print(result) 
             onTabLoad[page]()
-          end, 2)
+          end, 1)
         elseif page == 2 then --> IDE packages
           luarocks_ide("install " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
             print(result)
@@ -540,13 +540,14 @@ local function create_tab(parent, page, tab)
           end, 0)
         elseif page == 1 then --> System modules
           luarocks("show " .. item .. " --porcelain", function(result)
+            print(result)
             local homepage = string.match(result, "\nhomepage[%s\t]+([^\n%s]+)")
             if homepage then
               wx.wxLaunchDefaultBrowser(homepage, 0)
             else
               print("no homepage found")
             end
-          end, 2)
+          end, 1)
         elseif page == 2 then --> IDE packages
           luarocks_ide("show " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item .. " --porcelain", function(result)
             local homepage = string.match(result, "\nhomepage[%s\t]+([^\n%s]+)")
@@ -570,7 +571,7 @@ local function create_tab(parent, page, tab)
             luarocks("remove " .. item, function(result)
               print(result) 
               onTabLoad[page]()
-            end, 2)
+            end, 1)
           elseif page == 2 then --> IDE packages
             luarocks_ide("remove " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
               print(result)
