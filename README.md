@@ -3,7 +3,9 @@ Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directl
 
 ## TODO
 
-* Set Lua Interpreter to 5.1 on Install/Load IDE packages
+* Add tab to show current module `pachage.path` and `package.cpath`
+* Add option to clear LuaRocks cache
+* Tutiral: How to install "LuaRocks ZeroBrane Package"
 
 ## How to Deploy a ZeroBrane Package via LuaRocks
 
