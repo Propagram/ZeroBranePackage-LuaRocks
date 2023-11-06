@@ -15,6 +15,12 @@ local packages_path = zerobrane_path .. "packages" .. dir_separator
 local packages_cache = {}
 local project_path
 
+local current_page
+
+local onTabLoad = {}
+local LoadPackages
+local PagesResultsLabel = {}
+
 local function print(...)
   if debug then
     ide:Print(...)
@@ -134,6 +140,9 @@ local onInterpreterLoad = function(self, interpreter)
       print("lua incdir: ", lua_incdir)
     end, nil , true)
   end
+  if current_page and onTabLoad[current_page] then
+    onTabLoad[current_page]()
+  end
 end
 
 -- IDE Packages luarocks command hack
@@ -217,10 +226,6 @@ local function create_html(html)
 </html>
 ]]
 end
-
-local onTabLoad = {}
-local LoadPackages
-local PagesResultsLabel = {}
 
 local function create_tab(parent, page, tab)
 
@@ -390,11 +395,11 @@ local function create_tab(parent, page, tab)
           list:Clear()
           list:InsertItems(items, list:GetCount())
           if #items == 0 then
-            results_label:SetLabel(page == 2 and "No packages found" or "No modules found")
+            results_label:SetLabel("No modules found (Lua " .. lua_version .. ")")
           elseif #items == 1 then
-            results_label:SetLabel(page == 2 and #items .. " package found:" or #items .. " module found:")
+            results_label:SetLabel(#items .. " module found (Lua " .. lua_version .. "):")
           else
-            results_label:SetLabel(page == 2 and #items .. " packages found:" or #items .." modules found:")
+            results_label:SetLabel(#items .." modules found (Lua " .. lua_version .. "):")
           end
         end, 0)
       elseif page == 1 then --> System Modules
@@ -409,11 +414,11 @@ local function create_tab(parent, page, tab)
           list:Clear()
           list:InsertItems(items, list:GetCount())
           if #items == 0 then
-            results_label:SetLabel(page == 2 and "No packages found" or "No modules found")
+            results_label:SetLabel("No modules found (Lua " .. lua_version .. ")")
           elseif #items == 1 then
-            results_label:SetLabel(page == 2 and #items .. " package found:" or #items .. " module found:")
+            results_label:SetLabel(#items .. " module found (Lua " .. lua_version .. "):")
           else
-            results_label:SetLabel(page == 2 and #items .. " packages found:" or #items .." modules found:")
+            results_label:SetLabel(#items .." modules found (Lua " .. lua_version .. "):")
           end
         end, 1)
       elseif page == 2 then --> IDE Packages
@@ -432,11 +437,11 @@ local function create_tab(parent, page, tab)
           list:Clear()
           list:InsertItems(items, list:GetCount())
           if #items == 0 then
-            results_label:SetLabel(page == 2 and "No packages found" or "No modules found")
+            results_label:SetLabel("No packages found")
           elseif #items == 1 then
-            results_label:SetLabel(page == 2 and #items .. " package found:" or #items .. " module found:")
+            results_label:SetLabel(#items .. " package found:")
           else
-            results_label:SetLabel(page == 2 and #items .. " packages found:" or #items .." modules found:")
+            results_label:SetLabel(#items .. " packages found:")
           end
         end, 1)
       else
@@ -506,7 +511,7 @@ local function create_tab(parent, page, tab)
     if tab == 1 then --> Installed
       
       if tool == 0 then --> Update
-        PagesResultsLabel[page]:SetLabel("Checking for updates...")
+        PagesResultsLabel[page]:SetLabel("Checking '" .. item .. "' for updates...")
         if page == 0 then --> Project modules
           luarocks("install " .. item, function(result)
             print(result)
@@ -555,7 +560,7 @@ local function create_tab(parent, page, tab)
         
       elseif tool == 4 then --> Remove
 
-        if wx.wxMessageDialog(ide:GetProjectNotebook(), page == 2 and "Are you sure you want to remove the package " .. item .. "?" or "Are you sure you want to remove the module " .. item .. "?", "Confirm",  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
+        if wx.wxMessageDialog(ide:GetProjectNotebook(), page == 2 and "Are you sure you want to remove the package '" .. item .. "'?" or "Are you sure you want to remove the module '" .. item .. "'?", "Confirm",  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
           if page == 0 then --> Project modules
             luarocks("remove " .. item, function(result)
               print(result)
@@ -578,7 +583,7 @@ local function create_tab(parent, page, tab)
     elseif tab ==2 then --> Download
 
       if tool == 0 then --> Install
-        PagesResultsLabel[page]:SetLabel("Installing...")
+        PagesResultsLabel[page]:SetLabel("Installing '" .. item .. "'...")
         parent:SetSelection(0)
         if page == 0 then --> Project modules
           luarocks("install " .. item, function(result)
@@ -721,6 +726,8 @@ local function success()
       if page == wx.wxNOT_FOUND then
         return
       end
+      
+      current_page = page
 
       if onTabLoad[page] then
         onTabLoad[page]()
