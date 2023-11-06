@@ -5,7 +5,7 @@ Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directl
 
 * Add tab to show current module `pachage.path` and `package.cpath`
 * Add option to clear LuaRocks cache
-* Tutiral: How to install "LuaRocks ZeroBrane Package"
+* Tutorial: How to install "LuaRocks ZeroBrane Package"
 
 ## How to Deploy a ZeroBrane Package via LuaRocks
 
