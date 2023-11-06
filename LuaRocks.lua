@@ -233,6 +233,8 @@ local function create_tab(parent, page, tab)
   local sizer = wx.wxBoxSizer(wx.wxVERTICAL)
 
   local list = wx.wxListBox(panel, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize)
+
+  panel:SetBackgroundColour(panel:GetBackgroundColour()) -- fix panel colour
   
   if ide.osname == "Windows" and fg and bg then
     list:SetBackgroundColour(bg) -- fix selected item colour on Linux
@@ -655,7 +657,11 @@ local function create_page(parent, page)
   local panel = wx.wxPanel(parent, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize)
   local sizer = wx.wxBoxSizer(wx.wxVERTICAL)
   
+  panel:SetBackgroundColour(panel:GetBackgroundColour()) -- fix background colour
+  
   local subcontrol = wx.wxToolbook(panel, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize)
+  
+  subcontrol:SetBackgroundColour(subcontrol:GetBackgroundColour()) -- fix background colour
 
   sizer:Add(subcontrol, 0, wx.wxEXPAND+wx.wxALL, 0)
 
@@ -671,6 +677,8 @@ end
 local function create_about(parent)
   local panel = wx.wxPanel(parent, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize)
   local sizer = wx.wxBoxSizer(wx.wxVERTICAL)
+  
+  panel:SetBackgroundColour(panel:GetBackgroundColour()) -- fix background colour
   
   local subcontrol = wx.wxLuaHtmlWindow(panel)
 
@@ -714,6 +722,8 @@ local function success()
     local control = wx.wxListbook(ide:GetProjectNotebook(), wx.wxID_ANY, wx.wxDefaultPosition, wx.wxSize(200,200))
 
     control:SetImageList(page_image_list)
+    
+    control:SetBackgroundColour(control:GetBackgroundColour()) -- fix background colour
 
     if ide.osname == "Windows" and fg and bg then
       control:GetListView():SetBackgroundColour(bg)
@@ -749,6 +759,8 @@ local function failure()
   
   local panel = wx.wxPanel(ide:GetProjectNotebook(), wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize)
   local sizer = wx.wxBoxSizer(wx.wxVERTICAL)
+  
+  panel:SetBackgroundColour(panel:GetBackgroundColour()) -- fix background colour
   
   local subcontrol = wx.wxLuaHtmlWindow(panel)
 
