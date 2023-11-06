@@ -1,6 +1,6 @@
 -- (c) 2023 Propagram. MIT Licensed. 
 
-local luarocks_config = ide.config.luarocks or {}
+local luarocks_config = ide:GetConfig().luarocks or {}
 local luarocks_version
 local luarocks_path = luarocks_config.path or (ide.osname == "Windows" and "luarocks.exe" or "luarocks")
 local luarocks_panel = "luarocksPanel"
@@ -9,7 +9,7 @@ local debug = luarocks_config.debug
 local lua_dir, lua_version, lua_incdir
 local luarocks_dir
 
-local zerobrane_path, dir_separator = string.match(ide.editorFilename,"^(.+)([/\\])")
+local zerobrane_path, dir_separator = string.match(ide:GetRootPath(), "^(.+)([/\\])")
 zerobrane_path = zerobrane_path .. dir_separator
 local packages_path = zerobrane_path .. "packages" .. dir_separator
 local packages_cache = {}
@@ -22,9 +22,6 @@ local function print(...)
 end
 
 local function urlencode(url)
-  if url == nil then
-    return
-  end
   url = url:gsub("\n", "\r\n")
   url = url:gsub("([^%w ])", function(c)
     return string.format("%%%02X", string.byte(c))
@@ -794,7 +791,7 @@ return {
   name = "LuaRocks ZeroBrane Package",
   description = "Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!",
   author = "Evandro C.",
-  version = 0.5,
+  version = 0.6,
 
   onRegister = function(self)
     local pid 
