@@ -815,7 +815,7 @@ return {
 
   onRegister = function(self)
     local pid 
-    local user_dir = ide.configs.user:match("^(.+)[/\\]"):match("^(.+)[/\\]") .. dir_separator--wx.wxStandardPaths:Get():GetUserDir(0):match("^(.+)[/\\]") .. dir_separator
+    local user_dir = ide:GetPackagePath():match("^(.+)[/\\]"):match("^(.+)[/\\]"):match("^(.+)[/\\]") .. dir_separator
     if not wx.wxDirExists(user_dir .. ".luarocks") then
       wx.wxMkdir(user_dir .. ".luarocks")
     end
