@@ -665,10 +665,12 @@ local function create_page(parent, page)
   local sizer = wx.wxBoxSizer(wx.wxVERTICAL)
   
   panel:SetBackgroundColour(panel:GetBackgroundColour()) -- fix background colour
+  panel:SetForegroundColour(panel:GetForegroundColour()) -- fix foreground colour
   
   local subcontrol = wx.wxToolbook(panel, wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize)
   
   subcontrol:SetBackgroundColour(subcontrol:GetBackgroundColour()) -- fix background colour
+  subcontrol:SetForegroundColour(subcontrol:GetForegroundColour()) -- fix foreground colour
 
   sizer:Add(subcontrol, 0, wx.wxEXPAND+wx.wxALL, 0)
 
@@ -686,6 +688,7 @@ local function create_about(parent)
   local sizer = wx.wxBoxSizer(wx.wxVERTICAL)
   
   panel:SetBackgroundColour(panel:GetBackgroundColour()) -- fix background colour
+  panel:SetForegroundColour(panel:GetForegroundColour()) -- fix foreground colour
   
   local subcontrol = wx.wxLuaHtmlWindow(panel)
 
@@ -731,6 +734,7 @@ local function success()
     control:SetImageList(page_image_list)
     
     control:SetBackgroundColour(control:GetBackgroundColour()) -- fix background colour
+    control:SetForegroundColour(control:GetForegroundColour()) -- fix foreground colour
 
     if fg and bg then
       control:GetListView():SetBackgroundColour(bg)
@@ -768,6 +772,7 @@ local function failure()
   local sizer = wx.wxBoxSizer(wx.wxVERTICAL)
   
   panel:SetBackgroundColour(panel:GetBackgroundColour()) -- fix background colour
+  panel:SetForegroundColour(panel:GetForegroundColour()) -- fix foreground colour
   
   local subcontrol = wx.wxLuaHtmlWindow(panel)
 
