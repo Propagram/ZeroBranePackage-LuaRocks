@@ -248,6 +248,7 @@ local function create_tab(parent, page, tab)
   
   local details
   local results_label
+  local toolbar
 
   if tab == 2 then --> Download
 
@@ -256,7 +257,7 @@ local function create_tab(parent, page, tab)
     
     search_panel:SetSizer(search_sizer)
     
-    local search_label = wx.wxStaticText(panel, wx.wxID_ANY, page == 2 and "Search remote packages:" or "Search remote modules:")
+    local search_label = wx.wxStaticText(panel, wx.wxID_ANY, page == 2 and "Filter remote packages:" or "Search remote modules:")
     -- search_label:SetForegroundColour(fg)
 
     local search = wx.wxTextCtrl(search_panel, wx.wxID_ANY, "", wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxTE_PROCESS_ENTER)
@@ -307,7 +308,7 @@ local function create_tab(parent, page, tab)
           return
         end
 
-        if page == 2 then -- IDE packages
+        if page == 2 and out ~= "" then -- IDE packages
           packages_cache[value] = out
         end
         
@@ -382,6 +383,7 @@ local function create_tab(parent, page, tab)
       list:Clear()
       details:SetPage(create_html())
       box:GetStaticBox():Enable(false)
+      -- toolbar:Enable(false)
 
       results_label:SetLabel("Loading...")
 
@@ -480,7 +482,7 @@ local function create_tab(parent, page, tab)
 
   end
   
-  local toolbar = wx.wxToolBar(box:GetStaticBox(), wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxTB_NODIVIDER)
+  toolbar = wx.wxToolBar(box:GetStaticBox(), wx.wxID_ANY, wx.wxDefaultPosition, wx.wxDefaultSize, wx.wxTB_NODIVIDER)
 
   if tab == 1 then --> Installed
     toolbar:AddTool(wx.wxID_ANY, "&Update", image_list:GetBitmap(4), page == 2 and "Update package" or "Update module") --> 0
@@ -605,7 +607,11 @@ local function create_tab(parent, page, tab)
           end)
         end
       elseif tool == 2 then --> Query
-        wx.wxLaunchDefaultBrowser("https://luarocks.org/search?q=" .. urlencode(item), 0)
+        if page == 2 then --> IDE packages
+          wx.wxLaunchDefaultBrowser("https://luarocks.org/search?q=" .. urlencode((luarocks_config.package_prefix or "zerobranepackage-") .. item), 0)
+        else
+          wx.wxLaunchDefaultBrowser("https://luarocks.org/search?q=" .. urlencode(item), 0)
+        end
       end
     end
     
@@ -628,6 +634,7 @@ local function create_tab(parent, page, tab)
 
     print("item:", item)
     box:GetStaticBox():Enable(true)
+    -- toolbar:Enable(true)
     
     if tab == 1 then -- Installed
       if page == 0 then --> Project modules
