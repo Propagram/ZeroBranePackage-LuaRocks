@@ -732,7 +732,7 @@ local function success()
     
     control:SetBackgroundColour(control:GetBackgroundColour()) -- fix background colour
 
-    if ide.osname == "Windows" and fg and bg then
+    if fg and bg then
       control:GetListView():SetBackgroundColour(bg)
       control:GetListView():SetForegroundColour(fg)
     end
