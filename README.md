@@ -9,6 +9,8 @@ Search, install, and manage [ZeroBrane Studio](https://studio.zerobrane.com/) Pa
 
 2. Download the [LuaRocks binary from the official website](https://luarocks.github.io/luarocks/releases/) *(for Windows only)* or compile it from the source code [following the instructions on the official website](https://github.com/luarocks/luarocks/wiki/Download#user-content-installing), and place the executable in the same folder as `LuaRocks.lua` or make it searchable on the system `PATH`.
 
+3. Restart the IDE.
+
 ## Features
 
 * Search for modules on the Luarocks.org website directly through the plugin;
