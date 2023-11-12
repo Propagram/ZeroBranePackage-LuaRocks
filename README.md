@@ -1,11 +1,22 @@
 # LuaRocks ZeroBrane Package
-Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!
+Search, install, and manage [ZeroBrane Studio](https://studio.zerobrane.com/) Packages and Modules from [LuaRocks.org](https://luarocks.org/) directly in your favorite IDE!
 
-## TODO
+![zbstudio](https://github.com/Propagram/ZeroBranePackage-LuaRocks/assets/89323442/50fa292e-5a84-4143-934c-ece5203697cd)
 
-* Add tab to show current module `pachage.path` and `package.cpath`
-* Add option to clear LuaRocks cache
-* Tutorial: How to install "LuaRocks ZeroBrane Package"
+## How to install this package
+
+1. Download the `LuaRocks.lua` file from this repository and place it in the folder `<ZeroBraneInstallPath>/packages` or in `<UserHomePath>/.zbstudio/packages`.
+
+2. Download the [LuaRocks binary from the official website](https://luarocks.github.io/luarocks/releases/) *(for Windows only)* or compile it from the source code [following the instructions on the official website](https://github.com/luarocks/luarocks/wiki/Download#user-content-installing), and place the executable in the same folder as `LuaRocks.lua` or make it searchable on the system `PATH`.
+
+## Features
+
+* Search for modules on the Luarocks.org website directly through the plugin;
+* Install, update, and remove modules with just one button;
+* This plugin is capable of self-updating;
+* Quickly access the official website of any installed package;
+* **ALL** official packages are already available for installation in the plugin;
+* You can install modules directly in the project or per-user.
 
 ## How to Deploy a ZeroBrane Package via LuaRocks
 
@@ -45,3 +56,32 @@ build = {
 5. On LuaRocks.org, click **Upload**. On the left side, under "Rockspec", select the ".rockspec" file you previously created and click **Upload**.
 
 6. Done! Your package is now available for installation within ZeroBrane Studio.
+
+## TODO
+
+* Add tab to show current module `package.path` and `package.cpath`
+* Add option to clear LuaRocks cache
+
+## License
+
+MIT License
+
+Copyright (c) 2023 Propagram
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
