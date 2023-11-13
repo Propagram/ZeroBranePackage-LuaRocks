@@ -59,11 +59,6 @@ build = {
 
 6. Done! Your package is now available for installation within ZeroBrane Studio.
 
-## TODO
-
-* Add tab to show current module `package.path` and `package.cpath`
-* Add option to clear LuaRocks cache
-
 ## License
 
 MIT License
