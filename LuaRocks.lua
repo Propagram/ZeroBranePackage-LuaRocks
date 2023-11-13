@@ -106,7 +106,7 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
   end)
 end
 
-local onInterpreterLoad = function(self, interpreter)
+local onInterpreterLoad = function(self, interpreter, callback)
   if interpreter.fexepath then
     lua_dir = string.match(interpreter.fexepath(), "^(.+)([/\\])")
   end
@@ -136,6 +136,10 @@ local onInterpreterLoad = function(self, interpreter)
         lua_incdir = packages_path
       else
         lua_incdir = result
+      end
+      if type(callback) == "function" then
+        print("run callback")
+        callback()
       end
       print("lua incdir: ", lua_incdir)
     end, nil , true)
@@ -831,47 +835,47 @@ end
 
 local function success()
 
-    if type(ide:GetConfig().styles) == "table" and  ide:GetConfig().styles.text then
-      bg = wx.wxColour(unpack(ide:GetConfig().styles.text.bg))
-      fg = wx.wxColour(unpack(ide:GetConfig().styles.text.fg))
+  if type(ide:GetConfig().styles) == "table" and  ide:GetConfig().styles.text then
+    bg = wx.wxColour(unpack(ide:GetConfig().styles.text.bg))
+    fg = wx.wxColour(unpack(ide:GetConfig().styles.text.fg))
+  end
+  
+  local control = wx.wxListbook(ide:GetProjectNotebook(), wx.wxID_ANY, wx.wxDefaultPosition, wx.wxSize(200,200))
+
+  control:SetImageList(page_image_list)
+  
+  control:SetBackgroundColour(control:GetBackgroundColour()) -- fix background colour
+  control:SetForegroundColour(control:GetForegroundColour()) -- fix foreground colour
+
+  if fg and bg then
+    control:GetListView():SetBackgroundColour(bg)
+    control:GetListView():SetForegroundColour(fg)
+  end
+  
+  control:Connect(wx.wxEVT_LISTBOOK_PAGE_CHANGED, function(object) 
+
+    local page = object:GetSelection()
+
+    if page == wx.wxNOT_FOUND then
+      return
     end
     
-    local control = wx.wxListbook(ide:GetProjectNotebook(), wx.wxID_ANY, wx.wxDefaultPosition, wx.wxSize(200,200))
+    current_page = page
 
-    control:SetImageList(page_image_list)
-    
-    control:SetBackgroundColour(control:GetBackgroundColour()) -- fix background colour
-    control:SetForegroundColour(control:GetForegroundColour()) -- fix foreground colour
-
-    if fg and bg then
-      control:GetListView():SetBackgroundColour(bg)
-      control:GetListView():SetForegroundColour(fg)
+    if onTabLoad[page] then
+      onTabLoad[page]()
     end
-    
-    control:Connect(wx.wxEVT_LISTBOOK_PAGE_CHANGED, function(object) 
 
-      local page = object:GetSelection()
+  end)
 
-      if page == wx.wxNOT_FOUND then
-        return
-      end
-      
-      current_page = page
+  control:AddPage(create_page(control, 0), "Project Modules", true, 0)
+  control:AddPage(create_page(control, 1), "User Modules", false, 1)
+  control:AddPage(create_page(control, 2), "IDE Packages", false, 2)
+  -- control:AddPage(CreateBookPage(control, 3), "Tools", false, 2)
+  control:AddPage(create_about(control), "About", false, 3)
 
-      if onTabLoad[page] then
-        onTabLoad[page]()
-      end
-
-    end)
-
-    control:AddPage(create_page(control, 0), "Project Modules", true, 0)
-    control:AddPage(create_page(control, 1), "User Modules", false, 1)
-    control:AddPage(create_page(control, 2), "IDE Packages", false, 2)
-    -- control:AddPage(CreateBookPage(control, 3), "Tools", false, 2)
-    control:AddPage(create_about(control), "About", false, 3)
-
-    ide:AddPanelFlex(ide:GetProjectNotebook(), control, luarocks_panel, TR("LuaRocks"), conf)
-    MenuItem()
+  ide:AddPanelFlex(ide:GetProjectNotebook(), control, luarocks_panel, TR("LuaRocks"), conf)
+  MenuItem()
 end
 
 local function failure()
@@ -954,8 +958,8 @@ return {
       return luarocks("--version", function(out)
         luarocks_version = string.match(out, "luarocks ([%d%.]+)")
         if luarocks_version then
-          print("luarocks version: ", luarocks_version)
-          success()
+          print("fallback luarocks version: ", luarocks_version)
+          onInterpreterLoad(nil, ide:GetInterpreter(), success)
         else
           failure()
         end
@@ -965,7 +969,7 @@ return {
       luarocks_version = string.match(out, "luarocks ([%d%.]+)")
       if luarocks_version then
         print("luarocks version: ", luarocks_version)
-        success()
+        onInterpreterLoad(nil, ide:GetInterpreter(), success)
       else
         pid = fallback()
         if not pid then
