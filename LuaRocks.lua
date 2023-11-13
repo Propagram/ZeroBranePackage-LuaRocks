@@ -524,16 +524,31 @@ local function create_tab(parent, page, tab)
         PagesResultsLabel[page]:SetLabel("Checking '" .. item .. "' for updates...")
         if page == 0 then --> Project modules
           luarocks("install " .. item, function(result)
+              
+            if string.match(result, "now installed") then
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully updated in 'Project Modules'.", "Update success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            end
+              
             print(result)
             onTabLoad[page]()
           end, 0)
         elseif page == 1 then --> System modules
           luarocks("install " .. item, function(result)
+              
+            if string.match(result, "now installed") then
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully updated in 'User Modules'.", "Update success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            end
+              
             print(result) 
             onTabLoad[page]()
           end, 1)
         elseif page == 2 then --> IDE packages
           luarocks_ide("install " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
+              
+            if string.match(result, "now installed") then
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully updated. Restart ZeroBrane Studio to apply the changes.", "Update success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            end
+              
             print(result)
             onTabLoad[page]()
           end)
@@ -636,16 +651,31 @@ package.cpath = package.cpath .. ";]] .. lua_cpath .. [["
         parent:SetSelection(0)
         if page == 0 then --> Project modules
           luarocks("install " .. item, function(result)
+            
+            if string.match(result, "now installed") then
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", "Installation success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            end
+              
             print(result)
             onTabLoad[page]()            
           end, 0)
         elseif page == 1 then --> System modules
           luarocks("install " .. item, function(result)
+              
+            if string.match(result, "now installed") then
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'User Modules'.", "Installation success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            end
+              
             print(result)
             onTabLoad[page]()
           end, 1)
         elseif page == 2 then --> IDE packages
           luarocks_ide("install " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
+              
+            if string.match(result, "now installed") then
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully installed. Restart ZeroBrane Studio to apply the changes.", "Installation success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            end
+              
             print(result)
             onTabLoad[page]()            
           end)
