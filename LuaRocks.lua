@@ -796,6 +796,25 @@ local conf = function(panel)
   panel:Dock():MinSize(w,-1):BestSize(w,-1):FloatingSize(w,h)
 end
 
+local luarocks_panel_id = ID("LuaRocksPanel.LuaRocksPanelView")
+
+local function MenuItem()
+  
+  local menu = ide:GetMenuBar():GetMenu(ide:GetMenuBar():FindMenu(TR("&View")))
+  menu:InsertCheckItem(4, luarocks_panel_id, TR("LuaRocks Wundow")..KSC(id))
+  menu:Connect(luarocks_panel_id, wx.wxEVT_COMMAND_MENU_SELECTED, function (event)
+    local uimgr = ide:GetUIManager()
+    uimgr:GetPane(luarocks_panel):Show(not uimgr:GetPane(luarocks_panel):IsShown())
+    uimgr:Update()
+  end)
+  ide:GetMainFrame():Connect(luarocks_panel_id, wx.wxEVT_UPDATE_UI, function (event)
+    local pane = ide:GetUIManager():GetPane(luarocks_panel)
+    menu:Enable(event:GetId(), pane:IsOk()) -- disable if doesn't exist
+    menu:Check(event:GetId(), pane:IsOk() and pane:IsShown())
+  end)
+
+end
+
 local function success()
 
     if type(ide:GetConfig().styles) == "table" and  ide:GetConfig().styles.text then
@@ -838,6 +857,7 @@ local function success()
     control:AddPage(create_about(control), "About", false, 3)
 
     ide:AddPanelFlex(ide:GetProjectNotebook(), control, luarocks_panel, TR("LuaRocks"), conf)
+    MenuItem()
 end
 
 local function failure()
@@ -891,6 +911,7 @@ local function failure()
   end
 
   ide:AddPanelFlex(ide:GetProjectNotebook(), panel, luarocks_panel, "LuaRocks", conf)
+  MenuItem()
 end
 
 return {
@@ -941,10 +962,14 @@ return {
   end,
   
   onInterpreterLoad = onInterpreterLoad,
-  
+
   onProjectLoad = function(self, project)
     project_path = project
     print("project_path: ", project_path)
-  end
+  end,
+  
+  onUnRegister = function(self)
+    ide:RemoveMenuItem(luarocks_panel_id)
+  end,
 
 }
