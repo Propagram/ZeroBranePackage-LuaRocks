@@ -197,6 +197,7 @@ image_list:Add(wx.wxArtProvider.GetBitmap(wx.wxART_GO_DOWN, wx.wxART_TOOLBAR, wx
 image_list:Add(wx.wxArtProvider.GetBitmap(wx.wxART_HELP, wx.wxART_TOOLBAR, wx.wxSize(16, 16)))
 image_list:Add(wx.wxArtProvider.GetBitmap(wx.wxART_REDO, wx.wxART_TOOLBAR, wx.wxSize(16, 16)))
 image_list:Add(wx.wxArtProvider.GetBitmap(wx.wxART_DELETE, wx.wxART_TOOLBAR, wx.wxSize(16, 16)))
+image_list:Add(wx.wxArtProvider.GetBitmap(wx.wxART_PASTE, wx.wxART_TOOLBAR, wx.wxSize(16, 16)))
 
 local function create_html(html)
   if not html then
@@ -490,6 +491,11 @@ local function create_tab(parent, page, tab)
     toolbar:AddTool(wx.wxID_ANY, "&Homepage", image_list:GetBitmap(3), page == 2 and "Package homepage" or "Module homepage") --> 2
     toolbar:AddSeparator() --> 3
     toolbar:AddTool(wx.wxID_ANY, "&Remove", image_list:GetBitmap(5), page == 2 and "Remove package" or "Remove module") --> 4
+    if page ~= 2 then
+      toolbar:AddSeparator() --> 5
+      toolbar:AddTool(wx.wxID_ANY, "&Paths", image_list:GetBitmap(6), "Insert modules' paths in the editor") --> 6
+    end
+  
   elseif tab ==2 then --> Download
     toolbar:AddTool(wx.wxID_ANY, "&Install", image_list:GetBitmap(2), page == 2 and "Install package" or "Install module") --> 0
     toolbar:AddSeparator() --> 1
@@ -583,6 +589,44 @@ local function create_tab(parent, page, tab)
             end)
           end
         end
+        
+      elseif tool == 6 and page ~= 2 then --> Paths
+        
+        if page == 0 then --> Projects Modules
+          
+          local ed = ide:GetEditor()
+          if ed then
+            ed:AddText([[
+
+package.path = package.path .. ";luarocks_modules/share/lua/]] .. lua_version .. [[/?.lua;luarocks_modules/share/lua/]] .. lua_version .. [[/?/init.lua"
+package.cpath = package.cpath .. ";luarocks_modules/lib/lua/]] .. lua_version .. [[/?.]] .. (ide.osname == "Windows" and "dll" or "so") .. [["
+]])
+          end
+
+        elseif page == 1 then --> System Modules
+          
+          luarocks("path", function(result)
+            print("path: ", result)
+            
+            local lua_path = string.gsub(string.match(result, "LUA_PATH=([^\n\r\f]+)"), "\\", "\\\\")
+            print("lua_path: ", lua_path)
+            
+            local lua_cpath = string.gsub(string.match(result, "LUA_CPATH=([^\n\r\f]+)"), "\\", "\\\\")
+            print("lua_cpath: ", lua_cpath)
+            
+            local ed = ide:GetEditor()
+            if ed then
+              ed:AddText([[
+
+package.path = package.path .. ";]] .. lua_path .. [["
+package.cpath = package.cpath .. ";]] .. lua_cpath .. [["
+]])
+            end
+
+          end, 1)
+          
+        end
+        
       end
       
     elseif tab ==2 then --> Download
