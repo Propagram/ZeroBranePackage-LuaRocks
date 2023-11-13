@@ -342,7 +342,7 @@ local function create_tab(parent, page, tab)
             results_label:SetLabel(#items .. " results for '" .. search:GetValue() .. "':")
           end
         end
-        --list:InsertItems({"teste"}, list:GetCount())
+
       end
 
       results_label:SetLabel("Searching...")
@@ -589,16 +589,31 @@ local function create_tab(parent, page, tab)
         if wx.wxMessageDialog(ide:GetProjectNotebook(), page == 2 and "Are you sure you want to remove the package '" .. item .. "'?" or "Are you sure you want to remove the module '" .. item .. "'?", "Confirm",  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
           if page == 0 then --> Project modules
             luarocks("remove " .. item, function(result)
+              
+              if string.match(result, "Removal successful") then
+                wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully removed in 'Project Modules'.", "Remove success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              end
+                
               print(result)
               onTabLoad[page]()
             end, 0)
           elseif page == 1 then --> System modules
             luarocks("remove " .. item, function(result)
+                
+              if string.match(result, "Removal successful") then
+                wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully removed in 'User Modules'.", "Remove success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              end
+                
               print(result) 
               onTabLoad[page]()
             end, 1)
           elseif page == 2 then --> IDE packages
             luarocks_ide("remove " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
+                
+              if string.match(result, "Removal successful") then
+                wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully removed. Restart ZeroBrane Studio to apply the changes.", "Remove success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              end
+                
               print(result)
               onTabLoad[page]()
             end)
@@ -618,26 +633,24 @@ package.cpath = package.cpath .. ";luarocks_modules/lib/lua/]] .. lua_version ..
 ]])
           end
 
-        elseif page == 1 then --> System Modules
-          
+      elseif page == 1 then --> System Modules
+
           luarocks("path", function(result)
             print("path: ", result)
-            
             local lua_path = string.gsub(string.match(result, "LUA_PATH=([^\n\r\f]+)"), "\\", "\\\\")
             print("lua_path: ", lua_path)
-            
+            local lua_path_1, lua_path_2 = string.match(lua_path, "([^;]+);([^;]+)")
             local lua_cpath = string.gsub(string.match(result, "LUA_CPATH=([^\n\r\f]+)"), "\\", "\\\\")
             print("lua_cpath: ", lua_cpath)
-            
+            local lua_cpath_1 = string.match(lua_cpath, "([^;]+);")
             local ed = ide:GetEditor()
             if ed then
               ed:AddText([[
 
-package.path = package.path .. ";]] .. lua_path .. [["
-package.cpath = package.cpath .. ";]] .. lua_cpath .. [["
+package.path = package.path .. ";]] .. lua_path_1 .. [[;]] .. lua_path_2 .. [["
+package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
 ]])
             end
-
           end, 1)
           
         end
@@ -801,13 +814,13 @@ local luarocks_panel_id = ID("LuaRocksPanel.LuaRocksPanelView")
 local function MenuItem()
   
   local menu = ide:GetMenuBar():GetMenu(ide:GetMenuBar():FindMenu(TR("&View")))
-  menu:InsertCheckItem(4, luarocks_panel_id, TR("LuaRocks Wundow")..KSC(id))
-  menu:Connect(luarocks_panel_id, wx.wxEVT_COMMAND_MENU_SELECTED, function (event)
+  menu:InsertCheckItem(4, luarocks_panel_id, TR("LuaRocks Window")..KSC(luarocks_panel_id))
+  menu:Connect(luarocks_panel_id, wx.wxEVT_COMMAND_MENU_SELECTED, function (_)
     local uimgr = ide:GetUIManager()
     uimgr:GetPane(luarocks_panel):Show(not uimgr:GetPane(luarocks_panel):IsShown())
     uimgr:Update()
   end)
-  ide:GetMainFrame():Connect(luarocks_panel_id, wx.wxEVT_UPDATE_UI, function (event)
+  ide:GetMainFrame():Connect(luarocks_panel_id, wx.wxEVT_UPDATE_UI, function(event)
     local pane = ide:GetUIManager():GetPane(luarocks_panel)
     menu:Enable(event:GetId(), pane:IsOk()) -- disable if doesn't exist
     menu:Check(event:GetId(), pane:IsOk() and pane:IsShown())
@@ -918,7 +931,7 @@ return {
   name = "LuaRocks ZeroBrane Package",
   description = "Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!",
   author = "Evandro C.",
-  version = 0.6,
+  version = 0.7,
 
   onRegister = function(self)
     local pid 
@@ -970,6 +983,6 @@ return {
   
   onUnRegister = function(self)
     ide:RemoveMenuItem(luarocks_panel_id)
-  end,
+  end
 
 }
