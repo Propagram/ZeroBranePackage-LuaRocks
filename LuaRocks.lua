@@ -120,7 +120,7 @@ local onInterpreterLoad = function(self, interpreter, callback)
   print("lua interpreter: ", lua_dir)
   print("lua version: ", lua_version)
   if not luarocks_variables.LUA_INCDIR then
-    luarocks("config variables.LUA_INCDIR", function(result)
+    local pid = luarocks("config variables.LUA_INCDIR", function(result)
       if result == "" or result:lower():match("error") or result == packages_path:gsub("\"", ""):gsub("\\$", "") then
         -- Lua 5.X header files not found
         -- This package will create a false 'lua.h' so that Luarocks does not report an error during the installation of pure Lua libraries.
@@ -143,6 +143,10 @@ local onInterpreterLoad = function(self, interpreter, callback)
       end
       print("lua incdir: ", lua_incdir)
     end, nil , true)
+    if not pid and type(callback) == "function" then
+      print("run callback (no pid)")
+      callback()
+    end
   end
   if current_page and onTabLoad[current_page] then
     onTabLoad[current_page]()
