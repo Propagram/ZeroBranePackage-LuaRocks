@@ -296,6 +296,8 @@ local function create_tab(parent, page, tab)
 
       local parse_results = function(out)
           
+        print("packages results: ", out)
+        
         if page == 2 and lua_version ~= "5.1" then -- IDE Packages
           -- Revert to the current interpreter version.
           onInterpreterLoad(nil, {
@@ -303,9 +305,8 @@ local function create_tab(parent, page, tab)
           })
         end
         
-        if out:lower():match("^warning: failed searching manifest") then
-          results_label:SetLabel("Error obtaining remote results.")
-          print(out)
+        if out:lower():match("^warning: failed searching manifest") or out:lower():match("error: lua 5%.1 interpreter not found") then
+          results_label:SetLabel("No results. Press the button above and try again.")
           return
         end
 
@@ -325,7 +326,7 @@ local function create_tab(parent, page, tab)
         end)
         list:Clear()
         list:InsertItems(items, list:GetCount())
-        if empty == true then
+        if empty == true or search:GetValue() == "" then
           if #items == 0 then
             results_label:SetLabel("No results")
           elseif #items == 1 then
@@ -948,18 +949,9 @@ return {
       wx.wxMkdir(user_dir .. ".zbstudio" .. dir_separator .. "packages")
     end
     packages_path = user_dir .. ".zbstudio" .. dir_separator .. "packages" .. dir_separator
-    pid = luarocks("--version", function(out)
-      luarocks_version = string.match(out, "luarocks ([%d%.]+)")
-      if luarocks_version then
-        print("luarocks version: ", luarocks_version)
-        success()
-      else
-        failure()
-      end
-    end, nil, true)
-    if not pid then
-      luarocks_path = packages_path .. (ide.osname == "Windows" and "luarocks.exe" or "luarocks")
-      pid = luarocks("--version", function(out)
+    local function fallback()
+      luarocks_path = ide:GetPackagePath(ide.osname == "Windows" and "luarocks.exe" or "luarocks")
+      return luarocks("--version", function(out)
         luarocks_version = string.match(out, "luarocks ([%d%.]+)")
         if luarocks_version then
           print("luarocks version: ", luarocks_version)
@@ -968,6 +960,21 @@ return {
           failure()
         end
       end, nil, true)
+    end
+    pid = luarocks("--version", function(out)
+      luarocks_version = string.match(out, "luarocks ([%d%.]+)")
+      if luarocks_version then
+        print("luarocks version: ", luarocks_version)
+        success()
+      else
+        pid = fallback()
+        if not pid then
+          failure()
+        end
+      end
+    end, nil, true)
+    if not pid then
+      pid = fallback()
     end
     if not pid then
       failure()
