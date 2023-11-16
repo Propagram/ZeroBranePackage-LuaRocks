@@ -76,7 +76,7 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
       cmd = cmd ..
             " --tree=\"" .. (project_path:gsub("\"", "") .. (luarocks_config.directory or "luarocks_modules")):gsub("\\$", "")  .. "\""
       spec = project_path
-    elseif spec == 1 then  -- System/User Modules
+    elseif spec == 1 and not luarocks_config.global then  -- System/User Modules
       cmd = cmd ..
             " --local"
     elseif spec == 2 then  -- IDE Packages
@@ -327,6 +327,10 @@ local function create_tab(parent, page, tab)
           if page == 2 then
             item = string.sub(item, #(luarocks_config.package_prefix or "zerobranepackage-") + 1)
           end
+          item = string.match(item, "^[\n\r\f%s\t]*(.-)[\n\r\f%s\t]*$")
+          if item == "" then
+            return
+          end
           if not items[item] then
             items[#items + 1] = item
           end
@@ -401,6 +405,10 @@ local function create_tab(parent, page, tab)
         luarocks("list --porcelain", function(result)
           local items = {}
           string.gsub(result, "([^\n\r\f%s\t]+)[%s\t]+[0-9%.%-]+[%s\t]+installed", function(item)
+            item = string.match(item, "^[\n\r\f%s\t]*(.-)[\n\r\f%s\t]*$")
+            if item == "" then
+              return
+            end
             if not items[item] then
               items[#items + 1] = item
             end
@@ -420,6 +428,10 @@ local function create_tab(parent, page, tab)
         luarocks("list --porcelain", function(result)
           local items = {}
           string.gsub(result, "([^\n\r\f%s\t]+)[%s\t]+[0-9%.%-]+[%s\t]+installed", function(item)
+            item = string.match(item, "^[\n\r\f%s\t]*(.-)[\n\r\f%s\t]*$")
+            if item == "" then
+              return
+            end
             if not items[item] then
               items[#items + 1] = item
             end
@@ -442,6 +454,10 @@ local function create_tab(parent, page, tab)
             local start, final = string.find(item, (luarocks_config.package_prefix or "zerobranepackage-"), 0, true)
             if start == 1 then
               item = string.sub(item, final + 1)
+              item = string.match(item, "^[\n\r\f%s\t]*(.-)[\n\r\f%s\t]*$")
+              if item == "" then
+                return
+              end
               if not items[item] then
                 items[#items + 1] = item
               end
@@ -535,7 +551,7 @@ local function create_tab(parent, page, tab)
           luarocks("install " .. item, function(result)
               
             if string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully updated in 'Project Modules'.", "Update success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully updated in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
@@ -545,7 +561,7 @@ local function create_tab(parent, page, tab)
           luarocks("install " .. item, function(result)
               
             if string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully updated in 'User Modules'.", "Update success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully updated in '" .. (not luarocks_config.global and "User" or "System" ) .. " Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result) 
@@ -555,7 +571,7 @@ local function create_tab(parent, page, tab)
           luarocks_ide("install " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
               
             if string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully updated. Restart ZeroBrane Studio to apply the changes.", "Update success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully updated. Restart ZeroBrane Studio to apply the changes.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
@@ -595,12 +611,12 @@ local function create_tab(parent, page, tab)
         
       elseif tool == 4 then --> Remove
 
-        if wx.wxMessageDialog(ide:GetProjectNotebook(), page == 2 and "Are you sure you want to remove the package '" .. item .. "'?" or "Are you sure you want to remove the module '" .. item .. "'?", "Confirm",  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
+        if wx.wxMessageDialog(ide:GetProjectNotebook(), page == 2 and "Are you sure you want to remove the package '" .. item .. "'?" or "Are you sure you want to remove the module '" .. item .. "'?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
           if page == 0 then --> Project modules
             luarocks("remove " .. item, function(result)
               
               if string.match(result, "Removal successful") then
-                wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully removed in 'Project Modules'.", "Remove success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+                wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully removed in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
               end
                 
               print(result)
@@ -610,7 +626,7 @@ local function create_tab(parent, page, tab)
             luarocks("remove " .. item, function(result)
                 
               if string.match(result, "Removal successful") then
-                wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully removed in 'User Modules'.", "Remove success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+                wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully removed in '" .. (not luarocks_config.global and "User" or "System" ) .. " Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
               end
                 
               print(result) 
@@ -620,7 +636,7 @@ local function create_tab(parent, page, tab)
             luarocks_ide("remove " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
                 
               if string.match(result, "Removal successful") then
-                wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully removed. Restart ZeroBrane Studio to apply the changes.", "Remove success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+                wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully removed. Restart ZeroBrane Studio to apply the changes.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
               end
                 
               print(result)
@@ -675,7 +691,7 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
           luarocks("install " .. item, function(result)
             
             if string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", "Installation success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
@@ -685,7 +701,7 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
           luarocks("install " .. item, function(result)
               
             if string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'User Modules'.", "Installation success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in '" .. (not luarocks_config.global and "User" or "System" ) .. " Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
@@ -695,7 +711,7 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
           luarocks_ide("install " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
               
             if string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully installed. Restart ZeroBrane Studio to apply the changes.", "Installation success",  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully installed. Restart ZeroBrane Studio to apply the changes.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
@@ -873,7 +889,7 @@ local function success()
   end)
 
   control:AddPage(create_page(control, 0), "Project Modules", true, 0)
-  control:AddPage(create_page(control, 1), "User Modules", false, 1)
+  control:AddPage(create_page(control, 1), (not luarocks_config.global and "User" or "System" ) .. " Modules", false, 1)
   control:AddPage(create_page(control, 2), "IDE Packages", false, 2)
   -- control:AddPage(CreateBookPage(control, 3), "Tools", false, 2)
   control:AddPage(create_about(control), "About", false, 3)
