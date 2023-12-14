@@ -695,6 +695,10 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
             
             if string.match(result, "now installed") then
               wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            elseif string.match(result, "'git' program not found") then
+              if wx.wxMessageDialog(ide:GetProjectNotebook(), "The 'git' program was not found for installation. Would you like to download it now from the official website?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
+                wx.wxLaunchDefaultBrowser("https://git-scm.com/downloads", 0)
+              end
             end
               
             print(result)
@@ -705,6 +709,10 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
               
             if string.match(result, "now installed") then
               wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in '" .. (not luarocks_config.global and "User" or "System" ) .. " Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            elseif string.match(result, "'git' program not found") then
+              if wx.wxMessageDialog(ide:GetProjectNotebook(), "The 'git' program was not found for installation. Would you like to download it now from the official website?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
+                wx.wxLaunchDefaultBrowser("https://git-scm.com/downloads", 0)
+              end
             end
               
             print(result)
@@ -715,6 +723,10 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
               
             if string.match(result, "now installed") then
               wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully installed. Restart ZeroBrane Studio to apply the changes.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            elseif string.match(result, "'git' program not found") then
+              if wx.wxMessageDialog(ide:GetProjectNotebook(), "The 'git' program was not found for installation. Would you like to download it now from the official website?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
+                wx.wxLaunchDefaultBrowser("https://git-scm.com/downloads", 0)
+              end
             end
               
             print(result)
