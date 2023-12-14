@@ -1,4 +1,7 @@
 # LuaRocks ZeroBrane Package
+
+[![license](http://img.shields.io/badge/license-MIT-darkgreen.svg)](LICENSE)
+
 Search, install, and manage [ZeroBrane Studio](https://studio.zerobrane.com/) Packages and Modules from [LuaRocks.org](https://luarocks.org/) directly in your favorite IDE!
 
 ![zbstudio](https://github.com/Propagram/ZeroBranePackage-LuaRocks/assets/89323442/50fa292e-5a84-4143-934c-ece5203697cd)
