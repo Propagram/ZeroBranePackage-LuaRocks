@@ -74,7 +74,7 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
     end
     if spec == 0 then -- Projects Modules
       cmd = cmd ..
-            " --tree=\"" .. (project_path:gsub("\"", "") .. (luarocks_config.directory or "luarocks_modules")):gsub("\\$", "")  .. "\""
+            " --tree=\"" .. (project_path:gsub("\"", "") .. (luarocks_config.directory or "lua_modules")):gsub("\\$", "")  .. "\""
       spec = project_path
     elseif spec == 1 and not luarocks_config.global then  -- System/User Modules
       cmd = cmd ..
@@ -653,8 +653,8 @@ local function create_tab(parent, page, tab)
           if ed then
             ed:AddText([[
 
-package.path = package.path .. ";luarocks_modules/share/lua/]] .. lua_version .. [[/?.lua;luarocks_modules/share/lua/]] .. lua_version .. [[/?/init.lua"
-package.cpath = package.cpath .. ";luarocks_modules/lib/lua/]] .. lua_version .. [[/?.]] .. (ide.osname == "Windows" and "dll" or "so") .. [["
+package.path = package.path .. ";lua_modules/share/lua/]] .. lua_version .. [[/?.lua;lua_modules/share/lua/]] .. lua_version .. [[/?/init.lua"
+package.cpath = package.cpath .. ";lua_modules/lib/lua/]] .. lua_version .. [[/?.]] .. (ide.osname == "Windows" and "dll" or "so") .. [["
 ]])
           end
 
@@ -956,7 +956,7 @@ return {
   name = "LuaRocks ZeroBrane Package",
   description = "Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!",
   author = "Evandro C.",
-  version = 0.7,
+  version = 0.8,
 
   onRegister = function(self)
     local pid 
