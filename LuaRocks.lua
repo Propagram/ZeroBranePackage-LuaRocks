@@ -106,7 +106,7 @@ local function luarocks(cmd, ok_callback, spec, no_lua, no_shell, old_lua_dir, o
   end)
 end
 
-local onInterpreterLoad = function(self, interpreter, callback)
+local onInterpreterLoad = function(self, interpreter, callback, not_reload)
   if interpreter.fexepath then
     lua_dir = string.match(interpreter.fexepath(), "^(.+)([/\\])")
   end
@@ -148,7 +148,7 @@ local onInterpreterLoad = function(self, interpreter, callback)
       callback()
     end
   end
-  if current_page and onTabLoad[current_page] then
+  if current_page and onTabLoad[current_page] and not not_reload then
     onTabLoad[current_page]()
   end
 end
@@ -162,7 +162,7 @@ local function luarocks_ide(cmd, callback)
     -- Temporarily change the interpreter version to 5.1
     onInterpreterLoad(nil, {
       luaversion = "5.1"
-    })
+    }, nil, true)
     old_lua_version = "5.1"
   end
   local lua_modules_path = "/share/lua/" .. old_lua_version
@@ -180,7 +180,7 @@ local function luarocks_ide(cmd, callback)
                   -- Revert to the current interpreter version.
                   onInterpreterLoad(nil, {
                     luaversion = lua_version
-                  })
+                  }, nil, true)
                 end
                 return callback and callback(result)
               end, 2, nil, nil, old_lua_dir, old_lua_version)
@@ -278,7 +278,8 @@ local function create_tab(parent, page, tab)
     
     local search_button = wx.wxBitmapButton(search_panel, wx.wxID_ANY, image, wx.wxDefaultPosition, wx.wxDefaultSize)
     
-    local event = function(empty)
+    local event = function(empty, old_lua_version)
+
       local cmd
       local value = search:GetValue()
       if empty == true then
@@ -292,25 +293,25 @@ local function create_tab(parent, page, tab)
         return
       end
       
-      local lua_version = lua_version -- scope this var
-      local old_lua_version = lua_version
+      local lua_version = old_lua_version -- scope this var
+
       if page == 2 and lua_version ~= "5.1" then -- IDE Packages
         -- Temporarily change the interpreter version to 5.1
         onInterpreterLoad(nil, {
           luaversion = "5.1"
-        })
+        }, nil ,true)
         old_lua_version = "5.1"
       end
 
       local parse_results = function(out)
-          
+
         print("packages results: ", out)
-        
+
         if page == 2 and lua_version ~= "5.1" then -- IDE Packages
           -- Revert to the current interpreter version.
           onInterpreterLoad(nil, {
-            luaversion = lua_version
-          })
+            luaversion = old_lua_version
+          }, nil, true)
         end
         
         if out:lower():match("^warning: failed searching manifest") or out:lower():match("error: lua 5%.1 interpreter not found") then
@@ -400,6 +401,8 @@ local function create_tab(parent, page, tab)
       -- toolbar:Enable(false)
 
       results_label:SetLabel("Loading...")
+      
+      local old_lua_version = lua_version
 
       if page == 0 then --> Project Modules
         luarocks("list --porcelain", function(result)
@@ -480,7 +483,7 @@ local function create_tab(parent, page, tab)
       end
       
       if page == 2 then
-        LoadPackages(true)
+        LoadPackages(true, old_lua_version)
       end
 
     end
@@ -956,7 +959,7 @@ return {
   name = "LuaRocks ZeroBrane Package",
   description = "Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!",
   author = "Evandro C.",
-  version = 0.8,
+  version = 0.9,
 
   onRegister = function(self)
     local pid 
