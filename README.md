@@ -31,7 +31,7 @@ Search, install, and manage [ZeroBrane Studio](https://studio.zerobrane.com/) Pa
 
 2. Upload your `.lua` package file to the repository **without** the `ZeroBranePackage-` prefix. Using our example, the file should be named `example.lua`.
 
-3. Now, create a `.rockspec` file (the LuaRocks accepted standard). You can use a text editor such as Notepad. The Rockspec format should be as follows. Remember to replace the values to fit your package! (In the example below, we'll use our sample: `ZeroBranePackage-example`)
+3. Now, create a `.rockspec` file (the LuaRocks accepted standard). The Rockspec format should be as follows. Remember to replace the values to fit your package! (In the example below, we'll use our sample: `ZeroBranePackage-example`)
 
 ```lua
 package = "ZeroBranePackage-example" --> Edit here
@@ -62,7 +62,7 @@ build = {
 
 5. On LuaRocks.org, click **Upload**. On the left side, under "Rockspec", select the ".rockspec" file you previously created and click **Upload**.
 
-6. Done! Your package is now available for installation within ZeroBrane Studio.
+6. Done! The package is now available in the "IDE Packages" tab in ZeroBrane Studio.
 
 ## License
 
