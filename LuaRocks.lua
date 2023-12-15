@@ -15,6 +15,7 @@ local packages_path = zerobrane_path .. "packages" .. dir_separator
 local packages_cache = {}
 local project_path
 
+local control
 local current_page
 
 local onTabLoad = {}
@@ -155,6 +156,7 @@ end
 
 -- IDE Packages luarocks command hack
 local function luarocks_ide(cmd, callback)
+  control:Enable(false)
   local lua_version = lua_version -- scope this var
   local old_lua_dir = lua_dir
   local old_lua_version = lua_version
@@ -182,6 +184,7 @@ local function luarocks_ide(cmd, callback)
                     luaversion = lua_version
                   }, nil, true)
                 end
+                control:Enable(true)
                 return callback and callback(result)
               end, 2, nil, nil, old_lua_dir, old_lua_version)
             end, 2, nil, nil, old_lua_dir, old_lua_version)
@@ -278,7 +281,7 @@ local function create_tab(parent, page, tab)
     
     local search_button = wx.wxBitmapButton(search_panel, wx.wxID_ANY, image, wx.wxDefaultPosition, wx.wxDefaultSize)
     
-    local event = function(empty, old_lua_version)
+    local event = function(empty)
 
       local cmd
       local value = search:GetValue()
@@ -291,16 +294,6 @@ local function create_tab(parent, page, tab)
       if page ~= 2 and value == "" then
         results_label:SetLabel("No results for '" .. search:GetValue() .. "'")
         return
-      end
-      
-      local lua_version = old_lua_version -- scope this var
-
-      if page == 2 and lua_version ~= "5.1" then -- IDE Packages
-        -- Temporarily change the interpreter version to 5.1
-        onInterpreterLoad(nil, {
-          luaversion = "5.1"
-        }, nil ,true)
-        old_lua_version = "5.1"
       end
 
       local parse_results = function(out)
@@ -376,7 +369,11 @@ local function create_tab(parent, page, tab)
         return
       end
 
-      luarocks(cmd, parse_results, nil, nil, nil, nil, old_lua_version)
+        if page == 2 then
+            luarocks(cmd, parse_results, nil, nil, nil, nil, "5.1")
+        else
+            luarocks(cmd, parse_results, nil, nil, nil, nil)
+        end
     end
 
     if page == 2 then
@@ -401,8 +398,6 @@ local function create_tab(parent, page, tab)
       -- toolbar:Enable(false)
 
       results_label:SetLabel("Loading...")
-      
-      local old_lua_version = lua_version
 
       if page == 0 then --> Project Modules
         luarocks("list --porcelain", function(result)
@@ -483,7 +478,7 @@ local function create_tab(parent, page, tab)
       end
       
       if page == 2 then
-        LoadPackages(true, old_lua_version)
+        LoadPackages(true)
       end
 
     end
@@ -875,7 +870,7 @@ local function success()
     fg = wx.wxColour(unpack(ide:GetConfig().styles.text.fg))
   end
   
-  local control = wx.wxListbook(ide:GetProjectNotebook(), wx.wxID_ANY, wx.wxDefaultPosition, wx.wxSize(200,200))
+  control = wx.wxListbook(ide:GetProjectNotebook(), wx.wxID_ANY, wx.wxDefaultPosition, wx.wxSize(200,200))
 
   control:SetImageList(page_image_list)
   
