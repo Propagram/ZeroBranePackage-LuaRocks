@@ -372,7 +372,7 @@ local function create_tab(parent, page, tab)
         if page == 2 then
             luarocks(cmd, parse_results, nil, nil, nil, nil, "5.1")
         else
-            luarocks(cmd, parse_results, nil, nil, nil, nil)
+            luarocks(cmd, parse_results)
         end
     end
 
@@ -966,7 +966,7 @@ return {
   name = "LuaRocks ZeroBrane Package",
   description = "Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!",
   author = "Evandro C.",
-  version = 0.9,
+  version = 0.11,
 
   onRegister = function(self)
     local pid 
