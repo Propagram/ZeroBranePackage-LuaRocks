@@ -131,7 +131,7 @@ local onInterpreterLoad = function(self, interpreter, callback, not_reload)
         -- This package will create a false 'lua.h' so that Luarocks does not report an error during the installation of pure Lua libraries.
         local major, minor = lua_version:match("^(%d)%.(%d)")
         local lua_h = io.open(packages_path .. "lua.h", "w")
-        lua_h:write(string.format("LUAzbs_lua_version_NUM	%s0%s", major, minor))
+        lua_h:write(string.format("LUA_VERSION_NUM	%s0%s", major, minor))
         lua_h:close()
         if result ~= packages_path:gsub("\"", ""):gsub("\\$", "") then
           luarocks("config variables.LUA_INCDIR \"" .. packages_path:gsub("\"", ""):gsub("\\$", "") .. "\"", function()
@@ -970,7 +970,7 @@ return {
   name = "LuaRocks ZeroBrane Package",
   description = "Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!",
   author = "Evandro C.",
-  version = 0.11,
+  version = 0.12,
 
   onRegister = function(self)
     local pid 
