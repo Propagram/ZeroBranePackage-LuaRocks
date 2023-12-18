@@ -1,5 +1,7 @@
 -- (c) 2023 Propagram. MIT Licensed. 
 
+local zbs_lua_version = string.match(tostring(_VERSION), "%d%.%d")
+
 local luarocks_config = ide:GetConfig().luarocks or {}
 local luarocks_version
 local luarocks_path = luarocks_config.path or (ide.osname == "Windows" and "luarocks.exe" or "luarocks")
@@ -27,6 +29,8 @@ local function print(...)
     ide:Print(...)
   end
 end
+
+print("ZBS Lua", zbs_lua_version)
 
 local function urlencode(url)
   url = url:gsub("\n", "\r\n")
@@ -127,7 +131,7 @@ local onInterpreterLoad = function(self, interpreter, callback, not_reload)
         -- This package will create a false 'lua.h' so that Luarocks does not report an error during the installation of pure Lua libraries.
         local major, minor = lua_version:match("^(%d)%.(%d)")
         local lua_h = io.open(packages_path .. "lua.h", "w")
-        lua_h:write(string.format("LUA_VERSION_NUM	%s0%s", major, minor))
+        lua_h:write(string.format("LUAzbs_lua_version_NUM	%s0%s", major, minor))
         lua_h:close()
         if result ~= packages_path:gsub("\"", ""):gsub("\\$", "") then
           luarocks("config variables.LUA_INCDIR \"" .. packages_path:gsub("\"", ""):gsub("\\$", "") .. "\"", function()
@@ -160,12 +164,12 @@ local function luarocks_ide(cmd, callback)
   local lua_version = lua_version -- scope this var
   local old_lua_dir = lua_dir
   local old_lua_version = lua_version
-  if lua_version ~= "5.1" then
-    -- Temporarily change the interpreter version to 5.1
+  if lua_version ~= tostring(zbs_lua_version) then
+    -- Temporarily change the interpreter version to zbs_lua_version
     onInterpreterLoad(nil, {
-      luaversion = "5.1"
+      luaversion = tostring(zbs_lua_version)
     }, nil, true)
-    old_lua_version = "5.1"
+    old_lua_version = tostring(zbs_lua_version)
   end
   local lua_modules_path = "/share/lua/" .. old_lua_version
   local lib_modules_path = "/lib/lua/" .. old_lua_version
@@ -178,7 +182,7 @@ local function luarocks_ide(cmd, callback)
           luarocks("config lua_modules_path \"" .. lua_modules_path .. "\"", function()
             luarocks("config lib_modules_path \"" .. lib_modules_path .. "\"", function()
               luarocks("config rocks_subdir \"" .. rocks_subdir .. "\"", function()
-                if lua_version ~= "5.1" then
+                if lua_version ~= tostring(zbs_lua_version) then
                   -- Revert to the current interpreter version.
                   onInterpreterLoad(nil, {
                     luaversion = lua_version
@@ -300,7 +304,7 @@ local function create_tab(parent, page, tab)
 
         print("packages results: ", out)
 
-        if page == 2 and lua_version ~= "5.1" then -- IDE Packages
+        if page == 2 and lua_version ~= tostring(zbs_lua_version) then -- IDE Packages
           -- Revert to the current interpreter version.
           onInterpreterLoad(nil, {
             luaversion = old_lua_version
@@ -370,7 +374,7 @@ local function create_tab(parent, page, tab)
       end
 
         if page == 2 then
-            luarocks(cmd, parse_results, nil, nil, nil, nil, "5.1")
+            luarocks(cmd, parse_results, nil, nil, nil, nil, tostring(zbs_lua_version))
         else
             luarocks(cmd, parse_results)
         end
@@ -417,9 +421,9 @@ local function create_tab(parent, page, tab)
           if #items == 0 then
             results_label:SetLabel("No modules found (Lua " .. lua_version .. ")")
           elseif #items == 1 then
-            results_label:SetLabel(#items .. " module found (Lua " .. lua_version .. "):")
+            results_label:SetLabel(#items .. " module found (Lua " .. lua_version .. ")")
           else
-            results_label:SetLabel(#items .." modules found (Lua " .. lua_version .. "):")
+            results_label:SetLabel(#items .." modules found (Lua " .. lua_version .. ")")
           end
         end, 0)
       elseif page == 1 then --> System Modules
@@ -440,9 +444,9 @@ local function create_tab(parent, page, tab)
           if #items == 0 then
             results_label:SetLabel("No modules found (Lua " .. lua_version .. ")")
           elseif #items == 1 then
-            results_label:SetLabel(#items .. " module found (Lua " .. lua_version .. "):")
+            results_label:SetLabel(#items .. " module found (Lua " .. lua_version .. ")")
           else
-            results_label:SetLabel(#items .." modules found (Lua " .. lua_version .. "):")
+            results_label:SetLabel(#items .." modules found (Lua " .. lua_version .. ")")
           end
         end, 1)
       elseif page == 2 then --> IDE Packages
@@ -465,11 +469,11 @@ local function create_tab(parent, page, tab)
           list:Clear()
           list:InsertItems(items, list:GetCount())
           if #items == 0 then
-            results_label:SetLabel("No packages found")
+            results_label:SetLabel("No packages found (ZBS Lua " .. zbs_lua_version .. ")")
           elseif #items == 1 then
-            results_label:SetLabel(#items .. " package found:")
+            results_label:SetLabel(#items .. " package found (ZBS Lua " .. zbs_lua_version .. ")")
           else
-            results_label:SetLabel(#items .. " packages found:")
+            results_label:SetLabel(#items .. " packages found (ZBS Lua " .. zbs_lua_version .. ")")
           end
         end)
       else
