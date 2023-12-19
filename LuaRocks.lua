@@ -719,7 +719,7 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
                 wx.wxLaunchDefaultBrowser("https://git-scm.com/downloads", 0)
               end
             elseif string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in '" .. (not luarocks_config.global and "User" or "System" ) .. " Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
@@ -737,7 +737,7 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
                 wx.wxLaunchDefaultBrowser("https://git-scm.com/downloads", 0)
               end
             elseif string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully installed. Restart ZeroBrane Studio to apply the changes.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
