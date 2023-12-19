@@ -307,7 +307,7 @@ local function create_tab(parent, page, tab)
         if page == 2 and lua_version ~= tostring(zbs_lua_version) then -- IDE Packages
           -- Revert to the current interpreter version.
           onInterpreterLoad(nil, {
-            luaversion = old_lua_version
+            luaversion = lua_version
           }, nil, true)
         end
         
@@ -692,12 +692,16 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
         if page == 0 then --> Project modules
           luarocks("install " .. item, function(result)
             
-            if string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            if string.match(string.lower(result), "build error:") then 
+              if wx.wxMessageDialog(ide:GetProjectNotebook(), "Build error. It is necessary to install tools to compile the code. Do you want to open the instructions on how to proceed?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
+                wx.wxLaunchDefaultBrowser("https://github.com/luarocks/luarocks/wiki/Using-LuaRocks#using-a-c-compiler", 0)
+              end
             elseif string.match(result, "'git' program not found") then
               if wx.wxMessageDialog(ide:GetProjectNotebook(), "The 'git' program was not found for installation. Would you like to download it now from the official website?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
                 wx.wxLaunchDefaultBrowser("https://git-scm.com/downloads", 0)
               end
+            elseif string.match(result, "now installed") then
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
@@ -706,12 +710,16 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
         elseif page == 1 then --> System modules
           luarocks("install " .. item, function(result)
               
-            if string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in '" .. (not luarocks_config.global and "User" or "System" ) .. " Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            if string.match(string.lower(result), "build error:") then 
+              if wx.wxMessageDialog(ide:GetProjectNotebook(), "Build error. It is necessary to install tools to compile the code. Do you want to open the instructions on how to proceed?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
+                wx.wxLaunchDefaultBrowser("https://github.com/luarocks/luarocks/wiki/Using-LuaRocks#using-a-c-compiler", 0)
+              end
             elseif string.match(result, "'git' program not found") then
               if wx.wxMessageDialog(ide:GetProjectNotebook(), "The 'git' program was not found for installation. Would you like to download it now from the official website?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
                 wx.wxLaunchDefaultBrowser("https://git-scm.com/downloads", 0)
               end
+            elseif string.match(result, "now installed") then
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
@@ -720,12 +728,16 @@ package.cpath = package.cpath .. ";]] .. lua_cpath_1 .. [["
         elseif page == 2 then --> IDE packages
           luarocks_ide("install " .. (luarocks_config.package_prefix or "zerobranepackage-") .. item, function(result)
               
-            if string.match(result, "now installed") then
-              wx.wxMessageDialog(ide:GetProjectNotebook(), "The package '" .. item .. "' has been successfully installed. Restart ZeroBrane Studio to apply the changes.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
+            if string.match(string.lower(result), "build error:") then 
+              if wx.wxMessageDialog(ide:GetProjectNotebook(), "Build error. It is necessary to install tools to compile the code. Do you want to open the instructions on how to proceed?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
+                wx.wxLaunchDefaultBrowser("https://github.com/luarocks/luarocks/wiki/Using-LuaRocks#using-a-c-compiler", 0)
+              end
             elseif string.match(result, "'git' program not found") then
               if wx.wxMessageDialog(ide:GetProjectNotebook(), "The 'git' program was not found for installation. Would you like to download it now from the official website?", TR("LuaRocks"),  wx.wxICON_QUESTION+wx.wxOK+wx.wxCANCEL):ShowModal() == wx.wxID_OK then
                 wx.wxLaunchDefaultBrowser("https://git-scm.com/downloads", 0)
               end
+            elseif string.match(result, "now installed") then
+              wx.wxMessageDialog(ide:GetProjectNotebook(), "The module '" .. item .. "' has been successfully installed in 'Project Modules'.", TR("LuaRocks"),  wx.wxICON_INFORMATION+wx.wxOK):ShowModal()
             end
               
             print(result)
@@ -970,7 +982,7 @@ return {
   name = "LuaRocks ZeroBrane Package",
   description = "Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!",
   author = "Evandro C.",
-  version = 0.12,
+  version = 0.13,
 
   onRegister = function(self)
     local pid 
