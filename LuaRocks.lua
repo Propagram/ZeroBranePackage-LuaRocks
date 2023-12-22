@@ -174,7 +174,7 @@ local function luarocks_ide(cmd, callback)
   local lua_modules_path = "/share/lua/" .. old_lua_version
   local lib_modules_path = "/lib/lua/" .. old_lua_version
   local rocks_subdir = "/lib/luarocks/rocks-" .. old_lua_version
-  local empty = ide.osname == "Windows" and '""' or "''"
+  local empty = ide.osname == "Windows" and '"./"' or "''"
   luarocks("config lua_modules_path " .. empty, function()
     luarocks("config lib_modules_path " .. empty, function()
       luarocks("config rocks_subdir " .. empty, function()
@@ -982,7 +982,7 @@ return {
   name = "LuaRocks ZeroBrane Package",
   description = "Search, install, and manage ZeroBrane Packages and Modules from LuaRocks directly in your favorite IDE!",
   author = "Evandro C.",
-  version = 0.13,
+  version = 0.14,
 
   onRegister = function(self)
     local pid 
