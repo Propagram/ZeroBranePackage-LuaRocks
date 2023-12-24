@@ -27,6 +27,8 @@ Search, install, and manage [ZeroBrane Studio](https://studio.zerobrane.com/) Pa
 
 ## How to Deploy a ZeroBrane Package via LuaRocks
 
+Did you write a package for ZeroBrane Studio and want to make it available in the 'IDE Packages' tab of this plugin? Follow the steps below.
+
 1. Create a public repository. The repository name must start with `ZeroBranePackage-` followed by the name of your package. For example, if your package file is named `example.lua`, the repository name should be `ZeroBranePackage-example`. It's important to check beforehand if `ZeroBranePackage-example` already exists, for instance, if it's been previously released on LuaRocks.org (perform a search before proceeding to ensure uniqueness).
 
 2. Upload your `.lua` package file to the repository **without** the `ZeroBranePackage-` prefix. Using our example, the file should be named `example.lua`.
